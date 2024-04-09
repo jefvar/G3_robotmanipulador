@@ -1,3 +1,9 @@
 {
+<<<<<<< HEAD
+    "files.associations": {
+        "new": "cpp"
+    }
+=======
     "idf.portWin": "COM8"
+>>>>>>> master
 }
