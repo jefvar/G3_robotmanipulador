@@ -2,22 +2,29 @@
 #include <Adafruit_NeoPixel.h>
 #include "../lib/esp_random.h"
 #include "Control.cpp"  //encontramos lo relacionado con las funciones para el control y los define
+#include "Camara.h"
 
 //Variables globales
-float _ref_base=100,_ref_ante=190;
+float _ref_motores[3]={180,100,180};
+char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
+boolean newData = false; // Bandera para indicar que se han recibido nuevos datos
+//camara
+uint8_t receiver_mac[] = {0x94 , 0xB5 , 0x55 , 0xFC , 0x38 , 0x1C};
+int contador_cam=0;
+
+int contador=0;
+
 String inputString = "";
 float _ek_pos_base[2]; //error de posicion estado actual y anterior
-float _uk_pos_m1[2]; //accion de control actual y anterior
+float _uk_pos_base[2]; //accion de control actual y anterior
 float _ek_pos_brazo[2]; 
-float _uk_pos_m2[2]; 
-float _ek_pos_m3[2]; 
-float _uk_pos_m3[2];
+float _uk_pos_brazo[2]; 
+float _ek_pos_antebrazo[2]; 
+float _uk_pos_antebrazo[2];
 float _integral_motores[3]={0.0,0.0,0.0};
+float u_integral_antebrazo=0;
 
 hw_timer_t *timer = NULL; //Puntero de variable para configurar timer 
-Adafruit_NeoPixel pixels = Adafruit_NeoPixel(1, PIN_RGB, NEO_GRB + NEO_KHZ800);
-
- uint16_t aleatorio;      // Se creó esta variable para cambiar el color del RGB de forma aleatoria. No es necesario para el funcionamiento del robot.
 
 //Función de prueba con el Timer 0. ISR de la interrupción
 volatile bool has_expired = false;
@@ -31,17 +38,12 @@ void setup() {
   Serial.begin(115200);
   //Inicializacion de tablas
   InitTabla(_ek_pos_base,2);
-  InitTabla(_uk_pos_m1,2);
+  InitTabla(_uk_pos_base,2);
   InitTabla(_ek_pos_brazo,2);
-  InitTabla(_uk_pos_m2,2);
-  InitTabla(_ek_pos_m3,2);
-  InitTabla(_uk_pos_m3,2);
-  // LED RGB
-  pixels.begin();
-  pixels.setBrightness(10);
-  pixels.show(); // Initialize all pixels to 'off'
-  pixels.fill(0x33FFFF);
-  pixels.show();
+  InitTabla(_uk_pos_brazo,2);
+  InitTabla(_ek_pos_antebrazo,2);
+  InitTabla(_uk_pos_antebrazo,2);
+
   // CONFIGURAR AQUI LA INTERRUPCION
   // El código a continuación se utilizó para realizar una prueba con el led RGB con un timer (Timer 0). No es necesario para el funcionamiento del robot*/
   timer = timerBegin(0, 80, true); // Timer 0, clock divider 80
@@ -59,51 +61,63 @@ void setup() {
   _motors[0]->begin();       // Usar _motors[0]->begin() si se ha declarado como array
   _motors[1]->begin(); 
   _motors[2]->begin(); 
+
+
+  //Camara
+    WiFi.mode(WIFI_MODE_STA);
+    WiFi.disconnect();
+    ESPNow.init();
+    ESPNow.add_peer(receiver_mac);
+
 }
 
 void loop() {
-
-
-  if(Serial.available())
-  {
-      char incomingChar = Serial.read();
-      // Si el carácter recibido no es un salto de línea
-      if (incomingChar != '\n') {
-        // Agrega el carácter a la cadena de entrada
-        inputString += incomingChar;
-      } else {
-        // Si se recibe un salto de línea, convierte la cadena en un flotante
-        _ref_ante = inputString.toFloat();
-        
-        // Reinicia la cadena de entrada
-        inputString = "";
-    }
+  //LECTURA DE LAS REFERENCIAS DE ANGULO ,POSTERIORMENTE LAS REFERENCIAS VENDRAN DE LA TRAYECTORIA
+  recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
+  if (newData) { // Si se han recibido nuevos datos
+    parseData(); // Función para convertir los datos a valores flotantes
+    newData = false; // Reinicia la bandera de nuevos datos recibidos
   }
+
+  //INTERRUPCION PARA REALIZAR EL CONTROL
      if(has_expired)
    {
-      float integral_suma=0.0;
+
       DesplazarTabla(_ek_pos_base,2);
-      DesplazarTabla(_uk_pos_m1,2);
+      //DesplazarTabla(_uk_pos_base,2);
       DesplazarTabla(_ek_pos_brazo,2);
-      DesplazarTabla(_uk_pos_m2,2);
-      DesplazarTabla(_ek_pos_m3,2);
-      DesplazarTabla(_uk_pos_m3,2);
-      LecturaEncoder(MOTOR_ANTEBRAZO);
+      //DesplazarTabla(_uk_pos_brazo,2); //en brazo no se utilza la integral, funciona bien sin ella
+      DesplazarTabla(_ek_pos_antebrazo,2);
+      DesplazarTabla(_uk_pos_antebrazo,2);
 
-      /*_ek_pos_base[0]=_ref_ante-LecturaEncoder(MOTOR_BASE);
-      _ek_pos_brazo[0]=_ref_ante-LecturaEncoder(MOTOR_BRAZO);  
-      Serial.printf("_ek_pos_base: %f, _ek_pos_m2: %f \n",_ek_pos_base[0],_ek_pos_brazo[0]);
+      /*_ek_pos_base[0]=_ref_motores[0]-LecturaEncoder(MOTOR_BASE);
+      //Serial.printf("_ek_pos_base: %f \n",_ek_pos_base[0]);
+      _ek_pos_brazo[0]=_ref_motores[1]-LecturaEncoder(MOTOR_BRAZO); */
+      _ek_pos_antebrazo[0]=_ref_motores[2]-LecturaEncoder(MOTOR_ANTEBRAZO);  
 
-      integral_suma=integral(_ek_pos_base[0],&_integral_motores[0],ki,TS);*/
+      u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[3],ki,TS);
 
-      aleatorio = esp_random();
-      //Serial.println(aleatorio);
-      pixels.fill(aleatorio);
-      pixels.show();
-      //ControlPID_POS(_ek_pos_m1,_uk_pos_m1,KP_M_BASE,Kd,ki,MOTOR_BASE);
-      //ControlPID_POS(_ek_pos_m2,_uk_pos_m2,KP_M_BASE,Kd,ki,MOTOR_BRAZO);
+      //ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,MOTOR_BASE,DUTY_BASE);//problema en la base
+      //ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
+      ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
+
+      contador++;
+      if(contador==14){
+              Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
+              //printf("Accion integral: %f \n",u_integral_antebrazo);
+              contador=0; 
+      }
+      contador_cam++;
+      if(contador_cam==20){
+        static uint8_t a = 254;
+        ESPNow.send_message(receiver_mac, &a, 1);
+        //Serial.println(a++);
+        contador_cam=0;
+      }
       has_expired = false; 
    }
+   //printf("M1: %f, M2: %f, M3: %f \n",_ref_motores[0],_ref_motores[1],_ref_motores[2]);
+   //delay(1000);
 
 }
 

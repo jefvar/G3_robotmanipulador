@@ -1,5 +1,12 @@
 #include "Control.h"
 
+//Variables globales
+extern float _ref_motores[3];
+extern char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
+extern boolean newData; // Bandera para indicar que se han recibido nuevos datos
+extern float _ref_motores[3];
+int numValores=3;
+
 //FUNCIONES PARA TRATAMIENDO DE TABLAS
 void InitTabla(float t[], int n)
 {
@@ -21,6 +28,62 @@ void DesplazarTabla(float t[], int n)//no ponemos const porque necesitamos modif
     }
 
 }
+
+void recvWithEndMarker() {
+  static byte ndx = 0; // Índice del buffer
+  char endMarker = '\n'; // Caracter de fin de mensaje
+  char rc; // Variable para almacenar el caracter recibido
+
+  while (Serial.available() > 0 && newData == false) {
+    rc = Serial.read(); // Lee el próximo caracter
+    if (rc != endMarker) { // Si el caracter no es el fin de mensaje
+      receivedChars[ndx] = rc; // Almacena el caracter en el buffer
+      ndx++; // Incrementa el índice
+      if (ndx >= 32) { // Si se excede el tamaño del buffer
+        ndx = 31; // Limita el índice al tamaño máximo del buffer
+      }
+    } else { // Si se ha recibido el fin de mensaje
+      receivedChars[ndx] = '\0'; // Añade el caracter nulo al final del buffer
+      ndx = 0; // Reinicia el índice
+      newData = true; // Activa la bandera de nuevos datos recibidos
+    }
+  }
+}
+
+void parseData() {
+  char * strtokIndx; // Puntero para almacenar el índice del token
+  strtokIndx = strtok(receivedChars, ","); // Divide la cadena en tokens separados por coma
+  for (int i = 0; i < numValores; i++) {
+    _ref_motores[i] = atof(strtokIndx); // Convierte el token a float y lo guarda en el array
+    strtokIndx = strtok(NULL, ","); // Obtén el siguiente token
+  }//LIMITACION A LA ENTRADA DE ANGULOS POR SERIAL 
+     /* if(_ref_motores[0]>230){
+      _ref_motores[0]=230;}
+    else if(_ref_motores[0]<150){
+      _ref_motores[0]=150;}
+      if(_ref_motores[1]>140){
+      _ref_motores[1]=140;}
+    else if(_ref_motores[1]<50){
+      _ref_motores[1]=50;}
+      if(_ref_motores[2]>230){
+      _ref_motores[2]=230;}
+    else if(_ref_motores[2]<150){
+      _ref_motores[2]=150;}*/
+
+  // Imprimir los valores en el monitor serial
+  Serial.print("Valores leídos: ");
+  for (int i = 0; i < numValores; i++) {
+    Serial.print(_ref_motores[i]);
+    Serial.print("\t");
+  }
+  Serial.println(); // Salto de línea
+}
+
+
+
+
+
+
 //Funcion que lee encoder
 float LecturaEncoder(int n_motor){
   float ang=0;
@@ -38,19 +101,61 @@ float integral(float error, float *integral_sum, float K_i, float Ts) {
     *integral_sum += error * Ts; // Ts es el tiempo de muestreo
 
     /*// Anti-wind-up: Limitar la parte integral para evitar el "wind-up"
-    if (*integral_sum > limit) {
-        *integral_sum = limit; // Limitar la suma integral superiormente
-    } else if (*integral_sum < -limit) {
-        *integral_sum = -limit; // Limitar la suma integral inferiormente
+    if (*integral_sum >40) {
+        *integral_sum = 40; // Limitar la suma integral superiormente
+    } else if (*integral_sum < -40) {
+        *integral_sum = -40; // Limitar la suma integral inferiormente
     }*/
 
     // Cálculo de la salida de la parte integral
     float output = K_i * (*integral_sum);
     return output;
 }
+void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion){
+    float duty=0;
+    float u_prop=0,u_der=0;
+
+    u_prop=kp*error[0];
+    u_der=kd*(error[0]-error[1])/0.02;
+
+    if(error[0]<=1 && error[0]>=-1){
+      u_prop=0;
+      u_der=0;
+      u_integral=0;
+    }    
+    /*if (u_prop<=0.55 && u_prop>0)
+    {
+      u_prop=0.55;
+    }
+    else if(u_prop>=-0.55 && u_prop<0){
+      u_prop=-0.55;
+    }*/
+    duty=u_prop+u_integral;
+    /*duty=u_prop+u_der;//para la opcion de nacho  
+    uk[0]=uk[1]+duty;*/
+    if(duty>=saturacion)
+    //if(uk[0]>=saturacion)
+    {
+      duty=saturacion;
+      //uk[0]=saturacion;
+    }
+    else if(duty<=-saturacion)
+    //else if(uk[0]<=-saturacion)
+    {
+      duty=-saturacion;
+      //uk[0]=-saturacion;
+    }
+    Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
+    //Se aplica el control segun el numero del motor 
+    
+    _motors[n_motor]->SetDuty(duty);
+   // _motors[n_motor]->SetDuty(uk[0]);//con esta opcion se hace como nacho en control de velocidad
+}
+
 
 //Funcion que realiza control
-void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float *integral_sum,float Ts,int n_motor)
+//void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float *integral_sum,float Ts,int n_motor)//descomentar lo de abajo para la parte integral
+void ControlPD_POS(float error[2],float uk[2],float kp,float kd,int n_motor,float saturacion)
 { 
     float duty=0;
     float u_prop=0,u_der=0;
@@ -58,17 +163,15 @@ void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float *integral
 
     u_prop=kp*error[0];
     u_der=kd*(error[0]-error[1])/0.05;
-    *integral_sum+=error[0]*Ts; //sumatoria de la parte integral
-    u_integral=error[0]+ki*error[0];
 
-    duty=u_prop+u_der+u_integral;
-    if(duty>=0.8)
+    duty=u_prop+u_der;       
+    if(duty>=saturacion)
     {
-      duty=0.8;
+      duty=saturacion;
     }
-    else if(duty<=-0.8)
+    else if(duty<=-saturacion)
     {
-      duty=-0.8;
+      duty=-saturacion;
     }
     Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
     //Se aplica el control segun el numero del motor 
