@@ -159,10 +159,9 @@ void ControlPD_POS(float error[2],float uk[2],float kp,float kd,int n_motor,floa
 { 
     float duty=0;
     float u_prop=0,u_der=0;
-    float u_integral=0.0;
 
     u_prop=kp*error[0];
-    u_der=kd*(error[0]-error[1])/0.05;
+    u_der=kd*(error[0]-error[1])/0.02;
 
     duty=u_prop+u_der;       
     if(duty>=saturacion)

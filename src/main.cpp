@@ -44,6 +44,11 @@ void setup() {
   InitTabla(_ek_pos_antebrazo,2);
   InitTabla(_uk_pos_antebrazo,2);
 
+  //PRUEBA BUZZER
+  pinMode(BUZZER_PIN,OUTPUT);
+  digitalWrite(BUZZER_PIN,HIGH);
+  delay(2500);
+  digitalWrite(BUZZER_PIN,LOW);
   // CONFIGURAR AQUI LA INTERRUPCION
   // El código a continuación se utilizó para realizar una prueba con el led RGB con un timer (Timer 0). No es necesario para el funcionamiento del robot*/
   timer = timerBegin(0, 80, true); // Timer 0, clock divider 80
@@ -84,25 +89,25 @@ void loop() {
    {
 
       DesplazarTabla(_ek_pos_base,2);
-      //DesplazarTabla(_uk_pos_base,2);
+      DesplazarTabla(_uk_pos_base,2);
       DesplazarTabla(_ek_pos_brazo,2);
-      //DesplazarTabla(_uk_pos_brazo,2); //en brazo no se utilza la integral, funciona bien sin ella
+      DesplazarTabla(_uk_pos_brazo,2); //en brazo no se utilza la integral, funciona bien sin ella
       DesplazarTabla(_ek_pos_antebrazo,2);
       DesplazarTabla(_uk_pos_antebrazo,2);
 
-      /*_ek_pos_base[0]=_ref_motores[0]-LecturaEncoder(MOTOR_BASE);
+      _ek_pos_base[0]=_ref_motores[0]-LecturaEncoder(MOTOR_BASE);
       //Serial.printf("_ek_pos_base: %f \n",_ek_pos_base[0]);
-      _ek_pos_brazo[0]=_ref_motores[1]-LecturaEncoder(MOTOR_BRAZO); */
+      _ek_pos_brazo[0]=_ref_motores[1]-LecturaEncoder(MOTOR_BRAZO); 
       _ek_pos_antebrazo[0]=_ref_motores[2]-LecturaEncoder(MOTOR_ANTEBRAZO);  
 
       u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[3],ki,TS);
 
-      //ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,MOTOR_BASE,DUTY_BASE);//problema en la base
+      ControlPD_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,MOTOR_BASE,DUTY_BASE);//problema en la base
       //ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
-      ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
+      //ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
 
       contador++;
-      if(contador==14){
+      if(contador==15){
               Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
               contador=0; 

@@ -27,7 +27,7 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 #define MOTOR_BASE 0
 #define MOTOR_BRAZO 1
 #define MOTOR_ANTEBRAZO 2
-#define KP_M_BASE 0.015
+#define KP_M_BASE 0.02
 #define KP_M_BRAZO 0.01
 #define KP_M_ANTEBRAZO 0.03//0.028
 #define KD_M_BASE 0.001
