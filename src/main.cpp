@@ -5,7 +5,7 @@
 #include "Camara.h"
 
 //Variables globales
-float _ref_motores[3]={180,100,180};
+float _ref_motores[3]={90,100,180};
 char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
 boolean newData = false; // Bandera para indicar que se han recibido nuevos datos
 //camara
@@ -23,6 +23,8 @@ float _ek_pos_antebrazo[2];
 float _uk_pos_antebrazo[2];
 float _integral_motores[3]={0.0,0.0,0.0};
 float u_integral_antebrazo=0;
+float u_integral_base=0;
+
 
 hw_timer_t *timer = NULL; //Puntero de variable para configurar timer 
 
@@ -45,10 +47,10 @@ void setup() {
   InitTabla(_uk_pos_antebrazo,2);
 
   //PRUEBA BUZZER
-  pinMode(BUZZER_PIN,OUTPUT);
+  /*pinMode(BUZZER_PIN,OUTPUT);
   digitalWrite(BUZZER_PIN,HIGH);
-  delay(2500);
-  digitalWrite(BUZZER_PIN,LOW);
+  delay(1500);
+  digitalWrite(BUZZER_PIN,LOW);*/
   // CONFIGURAR AQUI LA INTERRUPCION
   // El código a continuación se utilizó para realizar una prueba con el led RGB con un timer (Timer 0). No es necesario para el funcionamiento del robot*/
   timer = timerBegin(0, 80, true); // Timer 0, clock divider 80
@@ -68,11 +70,11 @@ void setup() {
   _motors[2]->begin(); 
 
 
-  //Camara
+  /*//Camara
     WiFi.mode(WIFI_MODE_STA);
     WiFi.disconnect();
     ESPNow.init();
-    ESPNow.add_peer(receiver_mac);
+    ESPNow.add_peer(receiver_mac);*/
 
 }
 
@@ -95,31 +97,34 @@ void loop() {
       DesplazarTabla(_ek_pos_antebrazo,2);
       DesplazarTabla(_uk_pos_antebrazo,2);
 
-      _ek_pos_base[0]=_ref_motores[0]-LecturaEncoder(MOTOR_BASE);
+      _ek_pos_base[0]=_ref_motores[0]-(LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE);
       //Serial.printf("_ek_pos_base: %f \n",_ek_pos_base[0]);
       _ek_pos_brazo[0]=_ref_motores[1]-LecturaEncoder(MOTOR_BRAZO); 
-      _ek_pos_antebrazo[0]=_ref_motores[2]-LecturaEncoder(MOTOR_ANTEBRAZO);  
+      //_ek_pos_antebrazo[0]=_ref_motores[2]-LecturaEncoder(MOTOR_ANTEBRAZO);  
 
-      u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[3],ki,TS);
+      u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
+      u_integral_base=integral(_ek_pos_base[0],&_integral_motores[0],kI_BASE,TS);
 
-      ControlPD_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,MOTOR_BASE,DUTY_BASE);//problema en la base
-      //ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
+      ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
+      ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
       //ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
 
       contador++;
-      if(contador==15){
-              Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
+      if(contador==25){
+              //Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
+              Serial.printf("La posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/2,u_integral_base);
+              Serial.printf("La posicion del motor %d es: %f",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
               contador=0; 
       }
-      contador_cam++;
+      /*contador_cam++;
       if(contador_cam==20){
         static uint8_t a = 254;
         ESPNow.send_message(receiver_mac, &a, 1);
         //Serial.println(a++);
         contador_cam=0;
-      }
-      has_expired = false; 
+      }*/
+      has_expired = false;
    }
    //printf("M1: %f, M2: %f, M3: %f \n",_ref_motores[0],_ref_motores[1],_ref_motores[2]);
    //delay(1000);

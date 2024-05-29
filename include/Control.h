@@ -27,14 +27,15 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 #define MOTOR_BASE 0
 #define MOTOR_BRAZO 1
 #define MOTOR_ANTEBRAZO 2
-#define KP_M_BASE 0.02
-#define KP_M_BRAZO 0.01
-#define KP_M_ANTEBRAZO 0.03//0.028
-#define KD_M_BASE 0.001
+#define KP_M_BASE 0.07 //calibrado con 0.07
+#define KP_M_BRAZO 0.04
+#define KP_M_ANTEBRAZO 0.03
+#define KD_M_BASE 0.005 //calibrado con 0.005
 #define KD_M_BRAZO 0.001
 #define KD_M_ANTEBRAZO 0.001
 #define TS 0.02 //tiempo de muestreo
-#define ki 0.05//0.01
+#define kI_ANTEBRAZO 0.05//0.01
+#define kI_BASE 0.03 //calibrado con 0.03
 
 #define DUTY_BASE 1.0
 #define DUTY_BRAZO 1.0
@@ -44,6 +45,7 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 #define PIN_M1_EN 3         //EN_A
 #define PIN_M1_IN1 40       //IN1_A
 #define PIN_M1_IN2 39       //IN2_A
+#define REDUCCION_BASE 2.0
 
 #define PIN_M2_EN 21         //EN_N primeramente teniamos teniamos 48 y daba pwm de 1,7 por el mismo punto de abajo 1.8v, 21 era el in
 #define PIN_M2_IN1 17//48       //IN1_B 17 y 18 corresponden a los pines de tx rx previstos inicialmente
@@ -66,7 +68,7 @@ float LecturaEncoder(int n_motor);
 float integral(float error, float *integral_sum, float K_i, float Ts);
 //void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float integral,int n_motor);//opcion separa de la integral
 void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion);
-void ControlPD_POS(float error[2],float uk[2],float kp,float kd,int n_motor,float saturacion);
+void ControlPD_POS(float error[2],float uk[2],float kp,float kd,float Ts,int n_motor,float saturacion);
 
 
 #endif //

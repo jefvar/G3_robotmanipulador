@@ -52,23 +52,28 @@ void recvWithEndMarker() {
 
 void parseData() {
   char * strtokIndx; // Puntero para almacenar el índice del token
+  float _ref_motores_local[3];
   strtokIndx = strtok(receivedChars, ","); // Divide la cadena en tokens separados por coma
   for (int i = 0; i < numValores; i++) {
-    _ref_motores[i] = atof(strtokIndx); // Convierte el token a float y lo guarda en el array
+    _ref_motores_local[i] = atof(strtokIndx); // Convierte el token a float y lo guarda en el array
+    ; // Convierte el token a float y lo guarda en el array
     strtokIndx = strtok(NULL, ","); // Obtén el siguiente token
   }//LIMITACION A LA ENTRADA DE ANGULOS POR SERIAL 
-     /* if(_ref_motores[0]>230){
-      _ref_motores[0]=230;}
-    else if(_ref_motores[0]<150){
-      _ref_motores[0]=150;}
-      if(_ref_motores[1]>140){
-      _ref_motores[1]=140;}
-    else if(_ref_motores[1]<50){
-      _ref_motores[1]=50;}
-      if(_ref_motores[2]>230){
-      _ref_motores[2]=230;}
-    else if(_ref_motores[2]<150){
-      _ref_motores[2]=150;}*/
+      if(_ref_motores_local[0]>140){
+      _ref_motores_local[0]=140;}
+    else if(_ref_motores_local[0]<40){
+      _ref_motores_local[0]=40;}
+      if(_ref_motores_local[1]>140){
+      _ref_motores_local[1]=140;}
+    else if(_ref_motores_local[1]<50){
+      _ref_motores_local[1]=50;}
+      if(_ref_motores_local[2]>230){
+      _ref_motores_local[2]=230;}
+    else if(_ref_motores_local[2]<150){
+      _ref_motores_local[2]=150;}
+
+      for (int i = 0; i < numValores; i++) {
+    _ref_motores[i] =_ref_motores_local[i];}
 
   // Imprimir los valores en el monitor serial
   Serial.print("Valores leídos: ");
@@ -90,22 +95,27 @@ float LecturaEncoder(int n_motor){
   int pos_m=_encoder1->Read(n_motor); // lee encoder 0 (M1)
   if (pos_m!=0x80000000) { 
         ang=pos_m*360.0/4096.0;
-        Serial.printf("La posicion del motor %d es: %f \n", n_motor,ang);
+        //Serial.printf("La posicion del motor %d es: %f \n", n_motor,ang);
   }
   return ang;
 }
 
 // Función para la parte integral con anti-wind-up
 float integral(float error, float *integral_sum, float K_i, float Ts) {
-    // Integración del error
+    if(error<=1 && error >=-1)
+    {
+      *integral_sum=0;
+    }
+    else{
+      // Integración del error
     *integral_sum += error * Ts; // Ts es el tiempo de muestreo
-
-    /*// Anti-wind-up: Limitar la parte integral para evitar el "wind-up"
+    }
+    // Anti-wind-up: Limitar la parte integral para evitar el "wind-up"
     if (*integral_sum >40) {
         *integral_sum = 40; // Limitar la suma integral superiormente
     } else if (*integral_sum < -40) {
         *integral_sum = -40; // Limitar la suma integral inferiormente
-    }*/
+    }
 
     // Cálculo de la salida de la parte integral
     float output = K_i * (*integral_sum);
@@ -116,12 +126,13 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
     float u_prop=0,u_der=0;
 
     u_prop=kp*error[0];
-    u_der=kd*(error[0]-error[1])/0.02;
+    u_der=kd*(error[0]-error[1])/Ts;
 
-    if(error[0]<=1 && error[0]>=-1){
+    if(error[0]<=1.3 && error[0]>=-1.3){
       u_prop=0;
       u_der=0;
       u_integral=0;
+
     }    
     /*if (u_prop<=0.55 && u_prop>0)
     {
@@ -130,7 +141,7 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
     else if(u_prop>=-0.55 && u_prop<0){
       u_prop=-0.55;
     }*/
-    duty=u_prop+u_integral;
+    duty=u_prop+u_integral+u_der;
     /*duty=u_prop+u_der;//para la opcion de nacho  
     uk[0]=uk[1]+duty;*/
     if(duty>=saturacion)
@@ -155,13 +166,13 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
 
 //Funcion que realiza control
 //void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float *integral_sum,float Ts,int n_motor)//descomentar lo de abajo para la parte integral
-void ControlPD_POS(float error[2],float uk[2],float kp,float kd,int n_motor,float saturacion)
+void ControlPD_POS(float error[2],float uk[2],float kp,float kd,float Ts,int n_motor,float saturacion)
 { 
     float duty=0;
     float u_prop=0,u_der=0;
 
     u_prop=kp*error[0];
-    u_der=kd*(error[0]-error[1])/0.02;
+    u_der=kd*(error[0]-error[1])/Ts;
 
     duty=u_prop+u_der;       
     if(duty>=saturacion)
