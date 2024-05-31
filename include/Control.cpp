@@ -59,18 +59,18 @@ void parseData() {
     ; // Convierte el token a float y lo guarda en el array
     strtokIndx = strtok(NULL, ","); // Obtén el siguiente token
   }//LIMITACION A LA ENTRADA DE ANGULOS POR SERIAL 
-      if(_ref_motores_local[0]>140){
-      _ref_motores_local[0]=140;}
-    else if(_ref_motores_local[0]<40){
-      _ref_motores_local[0]=40;}
-      if(_ref_motores_local[1]>140){
-      _ref_motores_local[1]=140;}
-    else if(_ref_motores_local[1]<50){
-      _ref_motores_local[1]=50;}
-      if(_ref_motores_local[2]>230){
-      _ref_motores_local[2]=230;}
-    else if(_ref_motores_local[2]<150){
-      _ref_motores_local[2]=150;}
+    //   if(_ref_motores_local[0]>140){
+    //   _ref_motores_local[0]=140;}
+    // else if(_ref_motores_local[0]<40){
+    //   _ref_motores_local[0]=40;}
+    //   if(_ref_motores_local[1]>140){
+    //   _ref_motores_local[1]=140;}
+    // else if(_ref_motores_local[1]<50){
+    //   _ref_motores_local[1]=50;}
+    //   if(_ref_motores_local[2]>230){
+    //   _ref_motores_local[2]=230;}
+    // else if(_ref_motores_local[2]<150){
+    //   _ref_motores_local[2]=150;}
 
       for (int i = 0; i < numValores; i++) {
     _ref_motores[i] =_ref_motores_local[i];}
@@ -83,11 +83,6 @@ void parseData() {
   }
   Serial.println(); // Salto de línea
 }
-
-
-
-
-
 
 //Funcion que lee encoder
 float LecturaEncoder(int n_motor){
@@ -128,11 +123,10 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
     u_prop=kp*error[0];
     u_der=kd*(error[0]-error[1])/Ts;
 
-    if(error[0]<=1.3 && error[0]>=-1.3){
+    if(error[0]<=2 && error[0]>=-2){    // Base y antebrazo error en eje conductor es 1º
       u_prop=0;
       u_der=0;
       u_integral=0;
-
     }    
     /*if (u_prop<=0.55 && u_prop>0)
     {
@@ -156,7 +150,7 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
       duty=-saturacion;
       //uk[0]=-saturacion;
     }
-    Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
+    //Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
     //Se aplica el control segun el numero del motor 
     
     _motors[n_motor]->SetDuty(duty);
@@ -174,6 +168,11 @@ void ControlPD_POS(float error[2],float uk[2],float kp,float kd,float Ts,int n_m
     u_prop=kp*error[0];
     u_der=kd*(error[0]-error[1])/Ts;
 
+    if(error[0]<=1 && error[0]>=-1){    // Brazo error en eje conductor es 1º
+      u_prop=0;
+      u_der=0;
+    }  
+
     duty=u_prop+u_der;       
     if(duty>=saturacion)
     {
@@ -183,7 +182,7 @@ void ControlPD_POS(float error[2],float uk[2],float kp,float kd,float Ts,int n_m
     {
       duty=-saturacion;
     }
-    Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
+    //Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
     //Se aplica el control segun el numero del motor 
     _motors[n_motor]->SetDuty(duty);
 }
