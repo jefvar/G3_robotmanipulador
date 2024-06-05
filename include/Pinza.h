@@ -5,16 +5,18 @@
 
 #define PIN_SERVO 14
 #define SERVO_FREQ 50
-#define CIERRE_SERVO 80
-#define APERTURA_SERVO 180
+#define CIERRE_SERVO 90
+#define APERTURA_SERVO 0
 
-float minUs = 500;          // 0.5 ms
-float maxUs = 2500;         // 2.5ms
+float minUs = 500;          // 1 ms
+float maxUs = 2500;         // 2ms
 
 Servo Pinza;
 
-int posServo = 0;
+int posServo = 30;
 
 void config_servo();
+void abrir_servo();
+void cerrar_servo();
 
 #endif
