@@ -7,7 +7,7 @@
 
 
 //Variables globales
-float _ref_motores[3]={90,220,90};
+float _ref_motores[3]={90,240,90};
 char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
 boolean newData = false; // Bandera para indicar que se han recibido nuevos datos
 //camara
@@ -16,7 +16,7 @@ int contador_cam=0;
 
 int contador=0;
 int contador_servo = 0;
-int angulo_servo = CIERRE_SERVO;
+int angulo_servo = APERTURA_SERVO;
 
 String inputString = "";
 float _ek_pos_base[2]; //error de posicion estado actual y anterior
@@ -41,7 +41,6 @@ void IRAM_ATTR timerInterrupcion() {
 
 /************************* PROGRAMA PRINCIPAL *************************/
 void setup() {
-  Serial.begin(115200);
   //Inicializacion de tablas
   InitTabla(_ek_pos_base,2);
   InitTabla(_uk_pos_base,2);
@@ -51,10 +50,10 @@ void setup() {
   InitTabla(_uk_pos_antebrazo,2);
 
   //PRUEBA BUZZER
-  /*pinMode(BUZZER_PIN,OUTPUT);
+  pinMode(BUZZER_PIN,OUTPUT);
   digitalWrite(BUZZER_PIN,HIGH);
-  delay(1500);
-  digitalWrite(BUZZER_PIN,LOW);*/
+  delay(500);
+  digitalWrite(BUZZER_PIN,LOW);
   // CONFIGURAR AQUI LA INTERRUPCION
   // El código a continuación se utilizó para realizar una prueba con el led RGB con un timer (Timer 0). No es necesario para el funcionamiento del robot*/
   timer = timerBegin(0, 80, true); // Timer 0, clock divider 80
@@ -83,6 +82,7 @@ void setup() {
   // Inicialización servomotor
   config_servo();
   Pinza.write(angulo_servo);
+  Serial.begin(115200);
 
 }
 
@@ -120,10 +120,9 @@ void loop() {
       if(contador==25){
               //Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
-              //Serial.printf("Error del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,_ek_pos_base[0],u_integral_base);
-              //Serial.printf("Error del motor %d es: %f \n",MOTOR_BRAZO,_ek_pos_brazo[0]);
-              //Serial.printf("Error del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,_ek_pos_antebrazo[0],u_integral_antebrazo);
-
+              Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE,u_integral_base);
+              Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
+              Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE,u_integral_antebrazo);
               contador=0; 
       }
       /*contador_cam++;
@@ -134,11 +133,11 @@ void loop() {
         contador_cam=0;
       }*/
       contador_servo++;
-      if(contador_servo==10){
-        if (angulo_servo >= APERTURA_SERVO) {
-          angulo_servo = CIERRE_SERVO;
+      if(contador_servo==150){
+        if (angulo_servo >= CIERRE_SERVO) {
+          angulo_servo = APERTURA_SERVO;
         } else {
-          angulo_servo = angulo_servo + 10;
+          angulo_servo = CIERRE_SERVO;
         }
         Pinza.write(angulo_servo);
         Serial.printf("Angulo del servo: %d\n", angulo_servo);
