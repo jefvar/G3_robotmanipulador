@@ -48,8 +48,8 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 #define REDUCCION_BASE 2.0
 
 #define PIN_M2_EN 21         //EN_N primeramente teniamos teniamos 48 y daba pwm de 1,7 por el mismo punto de abajo 1.8v, 21 era el in
-#define PIN_M2_IN1 17//48       //IN1_B 17 y 18 corresponden a los pines de tx rx previstos inicialmente
-#define PIN_M2_IN2 18//47       //IN2_B 48 y 47 dieron problemas al arrojar 1.8v motor no se mueve
+#define PIN_M2_IN1 6//43//17//48       //IN1_B 17 y 18 corresponden a los pines de tx rx previstos inicialmente, 43 y 44 si funcionan pero se interrumpen con el la impresion del serial uart0
+#define PIN_M2_IN2 7//44//18//47       //IN2_B 48 y 47 dieron problemas al arrojar 1.8v motor no se mueve
 
 #define PIN_M3_EN 41         //EN_C
 #define PIN_M3_IN1 5       //IN1_C el 2 da problemas en un sentido, el pin 5 funciona bien perro era del cs camara
@@ -58,9 +58,9 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 #define PWM_FREQ_HZ    40000
 
 float _ek_pos_base[2]; //error de posicion estado actual y anterior
-// float _uk_pos_base[2]; //accion de control actual y anterior
+float _uk_pos_base[2]; //accion de control actual y anterior
 float _ek_pos_brazo[2]; 
-// float _uk_pos_brazo[2]; 
+float _uk_pos_brazo[2]; 
 float _ek_pos_antebrazo[2];                 
 // float _uk_pos_antebrazo[2];
 float _integral_motores[3]={0.0,0.0,0.0};

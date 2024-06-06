@@ -6,14 +6,13 @@
 #include "Pinza.cpp"
 #include "Estados.h"
 
-
 //Variables globales
-float _ref_motores[3]={90,240,90};
+float _ref_motores[3]={90,100,90};
 
 int contador_consola=0;
 
 hw_timer_t *timer = NULL; //Puntero de variable para configurar timer 
-HardwareSerial Serial_hmi(0); // define a Serial for UART1
+HardwareSerial Serial_hmi(1);
 
 const int Serial_hmi_RX = 18;
 const int Serial_hmi_TX = 17;
@@ -31,6 +30,7 @@ void setup() {
   InitTabla(_ek_pos_base,2);
   InitTabla(_ek_pos_brazo,2);
   InitTabla(_ek_pos_antebrazo,2);
+  InitTabla(_uk_pos_brazo,2);
 
   //PRUEBA BUZZER
   //pinMode(BUZZER_PIN,OUTPUT);
@@ -48,9 +48,8 @@ void setup() {
   int cs_pins[]={PIN_CS_BASE,PIN_CS_BRAZO,PIN_CS_ANTEBRAZO};
   _encoder1=new EncoderATM203_Spi2(cs_pins,N_MOTORS,PIN_MOSI,PIN_MISO,PIN_SCLK);
   _motors[0]=new Driver_L298n(PIN_M1_EN,PIN_M1_IN1,PIN_M1_IN2,PWM_FREQ_HZ );
-  //_motors[1]=new Driver_L298n(PIN_M2_EN,PIN_M2_IN1,PIN_M2_IN2,PWM_FREQ_HZ );
+  _motors[1]=new Driver_L298n(PIN_M2_EN,PIN_M2_IN1,PIN_M2_IN2,PWM_FREQ_HZ );
   _motors[2]=new Driver_L298n(PIN_M3_EN,PIN_M3_IN1,PIN_M3_IN2,PWM_FREQ_HZ );
-  //gpio_iomux_out(PIN_M3_EN, PWM0_OUT2B_IDX, 0);
   _motors[0]->begin();       // Usar _motors[0]->begin() si se ha declarado como array
   _motors[1]->begin(); 
   _motors[2]->begin(); 
@@ -71,20 +70,21 @@ void setup() {
   Serial.begin(115200);
   //gpio_iomux_out(43, U1TXD_OUT_IDX, 0);
   //gpio_iomux_in(44, U1RXD_IN_IDX);
-  Serial2.begin(9600);
+  Serial_hmi.begin(115200, SERIAL_8N1, Serial_hmi_RX, Serial_hmi_TX);
 
 }
 
 void loop() {
   //LECTURA DE LAS REFERENCIAS DE ANGULO ,POSTERIORMENTE LAS REFERENCIAS VENDRAN DE LA TRAYECTORIA
-  // recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
-  // if (newData) { // Si se han recibido nuevos datos
-  //   parseData(); // Función para convertir los datos a valores flotantes
-  //   newData = false; // Reinicia la bandera de nuevos datos recibidos
-  // }
+  recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
+  if (newData) { // Si se han recibido nuevos datos
+    parseData(); // Función para convertir los datos a valores flotantes
+    newData = false; // Reinicia la bandera de nuevos datos recibidos
+  }
 
-  if(Serial2.available()>0) {
-    Serial.print(Serial2.read());
+  if(Serial_hmi.available()>0) {
+    char c = Serial_hmi.read();
+    Serial.print(c);
   }
 
   //INTERRUPCION PARA REALIZAR EL CONTROL
@@ -102,8 +102,8 @@ void loop() {
       u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
       u_integral_base=integral(_ek_pos_base[0],&_integral_motores[0],kI_BASE,TS);
 
-      //ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
-      //ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
+      ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
+      ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
       //ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
 
       contador_consola++;
