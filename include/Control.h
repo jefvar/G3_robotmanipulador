@@ -57,6 +57,15 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 // Frecuencia de la PWM
 #define PWM_FREQ_HZ    40000
 
+float _ek_pos_base[2]; //error de posicion estado actual y anterior
+// float _uk_pos_base[2]; //accion de control actual y anterior
+float _ek_pos_brazo[2]; 
+// float _uk_pos_brazo[2]; 
+float _ek_pos_antebrazo[2];                 
+// float _uk_pos_antebrazo[2];
+float _integral_motores[3]={0.0,0.0,0.0};
+float u_integral_antebrazo=0;
+float u_integral_base=0;
 
 void InitTabla(float t[], int n);
 void DesplazarTabla(float t[], int n);

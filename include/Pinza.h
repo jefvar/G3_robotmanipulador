@@ -13,10 +13,12 @@ float maxUs = 2500;         // 2ms
 
 Servo Pinza;
 
-int posServo = 30;
+int contador_servo = 0;
+int angulo_servo = APERTURA_SERVO;
 
 void config_servo();
 void abrir_servo();
 void cerrar_servo();
+
 
 #endif
