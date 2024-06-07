@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <windows.h>
+//#include <windows.h>
 #include <iostream>
 #include <sstream>
 #include <vector>
@@ -158,45 +158,12 @@ struct string_two f_split_pos(std:: string movimiento){
     return digitos;
 }
 
-int main() {
-    
-    //Cinemática Directa 
-    struct tres_posiciones posicion = f_cinematica_directa(0, 43.15, 89.26);
-    printf("El valor de X es:%f\n", posicion.pos_1);
-    printf("El valor de Y es:%f\n", posicion.pos_2);
-    printf("El valor de Z es:%f\n", posicion.pos_3); 
-
-    //Cinemática Inversa
-    struct tres_posiciones angulo = f_cinematica_inversa(400, -20, -90);
-    printf("El valor de theta_0 es:%f\n", angulo.pos_1);
-    printf("El valor de theta_1 es:%f\n", angulo.pos_2);
-    printf("El valor de theta_2 es:%f\n", angulo.pos_3);    
-    
-    //Lectura de los puntos inicial y final de la trayectoria 
-    //1- posición actual -> Cinemática Directa (angulos(theta_0, theta_1, theta_2) a posición(x,y,z))
-    //float x_inicial = 350, y_inicial = 0, z_inicial = -95;
-    //2- lectura del punto final de la trayectoria 
-    //float x_final = 350, y_final = 0, z_final = -75;
-
-    /*
-    //Trayectoria Lineal -> ángulos de programa
-    std:: vector vector_angulos_programa = trayectoria_lineal(x_inicial, y_inicial, z_inicial, x_final, y_final, z_final);
-
-    for (int j = 0; j < 3*paso; ++j){
-        printf("Valor del vector de angulos_programa, pos %i: %f\n", j, vector_angulos_programa[j]);
-    }
-    
-    //Conversión de Angulos de Programa -> Angulos de Robot
-    std:: vector vector_angulos_robot = conversión_angulos(vector_angulos_programa);
-
-    for (int j = 0; j < 3*paso; ++j){
-        printf("Valor del vector de angulos_robot, pos %i: %f\n", j, vector_angulos_robot[j]);
-    }
-    */
-
-    //Las 19 Posiciones del tablero
+//Función Posiciones 
+std:: vector <float> f_posiciones_inicio_fin(int inicio, int fin){
     struct posiciones_tablero {float coord_x; float coord_y; float coord_z;}pos_0, pos_1, pos_2, pos_3, pos_4, 
     pos_5, pos_6, pos_7, pos_8, pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18;
+    //Vector donde se almacenan las 6 coordenadas 3punto inicial 3 punto final
+    std:: vector<float> vector_2puntos_trayectoria(6);
 
     pos_0.coord_x = 350.75;
     pos_0.coord_y = 37;
@@ -274,35 +241,22 @@ int main() {
     pos_18.coord_y = -70;
     pos_18.coord_z = -145;
 
-    printf("Valor lista_pos: %f\n",pos_1.coord_x);
     std::vector<posiciones_tablero> pos_tablero{pos_0, pos_1, pos_2, pos_3, pos_4, pos_5, pos_6, pos_7, pos_8};
     std::vector<posiciones_tablero> pos_fijas{pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18};
-
-    printf("Valor pos_tablero: %f\n",pos_tablero[0].coord_x);
-    printf("Valor pos_tablero: %f\n",pos_tablero[0].coord_y);
-    printf("Valor pos_tablero: %f\n",pos_tablero[0].coord_z);
-
-    //Trayectoria Lineal -> ángulos de programa
-    std:: vector vector_angulos_programa = trayectoria_lineal(pos_tablero[0].coord_x, pos_tablero[0].coord_y, pos_tablero[0].coord_z,
-     pos_tablero[8].coord_x, pos_tablero[8].coord_y, pos_tablero[8].coord_z);
-
-    for (int j = 0; j < 3*paso; ++j){
-        printf("Valor del vector de angulos_programa, pos %i: %f\n", j, vector_angulos_programa[j]);
+    
+    for (int i = 0; i < 1; i++)
+    {
+        vector_2puntos_trayectoria[3*i] = pos_fijas[inicio].coord_x;
+        vector_2puntos_trayectoria[3*i+1] = pos_fijas[inicio].coord_y;
+        vector_2puntos_trayectoria[3*i+2] = pos_fijas[inicio].coord_z;
     }
 
-    //Función decodificar 2 números
-    std::string movimiento = "2.4"; //ejemplo de prueba
-    struct string_two string_split = f_split_pos(movimiento);
-    struct int_two int_split;
-    std:: cout << "Posicion 1: " << string_split.string_1 << std:: endl;
-    std:: cout << "Posicion 2: " << string_split.string_2  << std:: endl;
-    int_split.int_1 = stoi(string_split.string_1);
-    int_split.int_2 = stoi(string_split.string_2);
-
-    printf("int_1: %i\n", int_split.int_1);
-    printf("int_2: %i\n", int_split.int_2);
-
-    printf("Valor pos_tablero: %f\n",pos_tablero[int_split.int_1].coord_x);
-    printf("Valor pos_tablero: %f\n",pos_tablero[int_split.int_1].coord_y);
-    printf("Valor pos_tablero: %f\n",pos_tablero[int_split.int_1].coord_z);
+    for (int i = 1; i < 2; i++)
+    {
+        vector_2puntos_trayectoria[3*i] = pos_tablero[fin].coord_x;
+        vector_2puntos_trayectoria[3*i+1] = pos_tablero[fin].coord_y;
+        vector_2puntos_trayectoria[3*i+2] = pos_tablero[fin].coord_z;
+    }
+    
+    return vector_2puntos_trayectoria;
 }
