@@ -1,0 +1,15 @@
+float direct_kinematics (theta_0, theta_1, theta_2)
+{
+//Función cálculo de la cinemática directa del robot
+//Entradas -> ángulos theta_0 theta_1 theta_2 -> En grados 
+//Salidas -> punto TCP (x,y,z)
+
+L1 = 270; //Long Brazo (mm)
+L2 = 250; //Long Antebrazo (mm)
+L3 = 100; //Long Mano (mm)
+
+P1 = L1 * [sin(theta_1), cos(theta_2)];
+P2 = P1 + L2 * [sin(theta_1+theta_2), cos(theta_1+theta_2)];
+P3 = P2 + [w2,]
+
+}
