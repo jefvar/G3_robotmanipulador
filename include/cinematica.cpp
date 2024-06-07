@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <windows.h>
+//#include <windows.h>
 #include <iostream>
 #include <sstream>
 #include <vector>

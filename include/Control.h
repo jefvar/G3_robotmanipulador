@@ -57,6 +57,10 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 // Frecuencia de la PWM
 #define PWM_FREQ_HZ    40000
 
+float lectura_encoder_base;
+float lectura_encoder_brazo;
+float lectura_encoder_antebrazo;
+
 float _ek_pos_base[2]; //error de posicion estado actual y anterior
 float _uk_pos_base[2]; //accion de control actual y anterior
 float _ek_pos_brazo[2]; 

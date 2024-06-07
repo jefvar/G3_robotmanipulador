@@ -6,12 +6,13 @@
 #include "Pinza.cpp"
 #include "Estados.cpp"
 #include "Buzzer.cpp"
+//#include "cinematica.cpp"
 
 //Variables globales
 float _ref_motores[3]={90,100,90};
 
 int contador_consola=0;
-
+int contador_jeff = 0;
 hw_timer_t *timer = NULL; //Puntero de variable para configurar timer 
 HardwareSerial Serial_hmi(1);
 
@@ -113,6 +114,7 @@ void loop() {
 
   case CALIBRACION:
     //tone_buzz(300,500);
+    modo_calibracion();
     break;
 
   case AUTOMATICO:
@@ -131,6 +133,7 @@ void loop() {
     break;
   }
   //INTERRUPCION PARA REALIZAR EL CONTROL
+  //if(has_expired)
   if(has_expired)
    {
 
@@ -145,7 +148,7 @@ void loop() {
       u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
       u_integral_base=integral(_ek_pos_base[0],&_integral_motores[0],kI_BASE,TS);
 
-      ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
+      //ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
       //ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
       //ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
 
@@ -153,9 +156,9 @@ void loop() {
       if(contador_consola==25){
               //Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
-              //Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE,u_integral_base);
-              //Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
-              //Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE,u_integral_antebrazo);
+              Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE,u_integral_base);
+              Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
+              Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE,u_integral_antebrazo);
               contador_consola=0; 
       }
       /*contador_cam++;
@@ -165,7 +168,7 @@ void loop() {
         //Serial.println(a++);
         contador_cam=0;
       }*/
-      contador_servo++;
+      /*contador_servo++;
       if(contador_servo==150){
         if (angulo_servo >= CIERRE_SERVO) {
           angulo_servo = APERTURA_SERVO;
@@ -175,7 +178,21 @@ void loop() {
         Pinza.write(angulo_servo);
         //Serial.printf("Angulo del servo: %d\n", angulo_servo);
         contador_servo=0;
-      }
+      } */
+
+      // Duty para mover motores
+      // contador_jeff++;
+      // if(contador_jeff==150){
+      //   if (angulo_servo >= CIERRE_SERVO) {
+      //     angulo_servo = APERTURA_SERVO;
+      //   } else {
+      //     angulo_servo = CIERRE_SERVO;
+      //   }
+      //   Pinza.write(angulo_servo);
+      //   //Serial.printf("Angulo del servo: %d\n", angulo_servo);
+      //   contador_servo=0;
+      // }
+
       has_expired = false;
    }
    //printf("M1: %f, M2: %f, M3: %f \n",_ref_motores[0],_ref_motores[1],_ref_motores[2]);
