@@ -7,5 +7,6 @@ extern int numero_turnos;
 extern String strLectura;
 
 void modo_manual();
+void modo_calibracion();
 
 #endif
