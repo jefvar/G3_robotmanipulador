@@ -4,7 +4,8 @@
 #include "Control.cpp"  //encontramos lo relacionado con las funciones para el control y los define
 #include "Camara.h"
 #include "Pinza.cpp"
-#include "Estados.h"
+#include "Estados.cpp"
+#include "Buzzer.cpp"
 
 //Variables globales
 float _ref_motores[3]={90,100,90};
@@ -16,6 +17,10 @@ HardwareSerial Serial_hmi(1);
 
 const int Serial_hmi_RX = 18;
 const int Serial_hmi_TX = 17;
+
+// VARIABLES GLOBALES
+enum estadosControl _estado_control = ESTADO_INICIAL;
+String strLectura;
 
 //Función de prueba con el Timer 0. ISR de la interrupción
 volatile bool has_expired = false;
@@ -33,7 +38,8 @@ void setup() {
   InitTabla(_uk_pos_brazo,2);
 
   //PRUEBA BUZZER
-  //pinMode(BUZZER_PIN,OUTPUT);
+  //setupTimerBuzz();
+  pinMode(BUZZER_PIN,OUTPUT);
   //digitalWrite(BUZZER_PIN,HIGH);
   //delay(500);
   //digitalWrite(BUZZER_PIN,LOW);
@@ -76,17 +82,54 @@ void setup() {
 
 void loop() {
   //LECTURA DE LAS REFERENCIAS DE ANGULO ,POSTERIORMENTE LAS REFERENCIAS VENDRAN DE LA TRAYECTORIA
-  recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
-  if (newData) { // Si se han recibido nuevos datos
-    parseData(); // Función para convertir los datos a valores flotantes
-    newData = false; // Reinicia la bandera de nuevos datos recibidos
-  }
+  // recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
+  // if (newData) { // Si se han recibido nuevos datos
+  //   parseData(); // Función para convertir los datos a valores flotantes
+  //   newData = false; // Reinicia la bandera de nuevos datos recibidos
+  // }
 
-  if(Serial_hmi.available()>0) {
-    char c = Serial_hmi.read();
-    Serial.print(c);
-  }
+  if (Serial_hmi.available() > 0) {
+    strLectura = Serial_hmi.readStringUntil('\n');
+    strLectura.trim();
+    Serial.print(strLectura);
 
+    if (strLectura == "INICIAL") {
+      _estado_control = ESTADO_INICIAL;
+    } else if (strLectura == "CALIBRACION") {
+      _estado_control = CALIBRACION;
+    } else if (strLectura == "AUTOMATICO") {
+      _estado_control = AUTOMATICO;
+    } else if (strLectura == "MANUAL") {
+      _estado_control = MANUAL;
+    }
+
+  }
+  /*************************** SWITCH CASE ***************************/
+  switch (_estado_control)
+  {
+  case ESTADO_INICIAL:
+    //tone_buzz(400,500);
+    break;
+
+  case CALIBRACION:
+    //tone_buzz(300,500);
+    break;
+
+  case AUTOMATICO:
+    //tone_buzz(200,500);
+    break;
+
+  case MANUAL:
+    //tone_buzz(100,500);
+    //digitalWrite(BUZZER_PIN,HIGH);
+    modo_manual();
+    break;
+  
+  default:
+    _estado_control=ESTADO_INICIAL;
+    //tone_buzz(20,500);
+    break;
+  }
   //INTERRUPCION PARA REALIZAR EL CONTROL
   if(has_expired)
    {
@@ -110,9 +153,9 @@ void loop() {
       if(contador_consola==25){
               //Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
-              Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE,u_integral_base);
-              Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
-              Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE,u_integral_antebrazo);
+              //Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE,u_integral_base);
+              //Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
+              //Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE,u_integral_antebrazo);
               contador_consola=0; 
       }
       /*contador_cam++;
