@@ -1,13 +1,21 @@
 #include "Estados.h"
 #include "Control.h"
 #include "Pinza.h"
+#include "cinematica.h"
 
 int numero_turnos = 0;
 float duty_calibracion = 0.8;
 
-void modo_manual()  {
-    while(strLectura != "end") {
+// MODO MANUAL
+string_two pos_ini_end;
 
+void modo_manual()  {
+    if(strLectura != "end" && strLectura != "MANUAL" && strLectura != "") {
+        pos_ini_end = f_split_pos(strLectura.c_str());
+        Serial.printf("%d", pos_ini_end.string_1);
+        Serial.println();
+        Serial.printf("%d", pos_ini_end.string_2);
+        strLectura = "";
     }
 }
 
@@ -37,7 +45,7 @@ void modo_calibracion() {
         _motors[MOTOR_BRAZO]->SetDuty(0);
         digitalWrite(BUZZER_PIN,LOW);
     } else if (strLectura == "ANTE_ANTI1") {
-        _motors[MOTOR_ANTEBRAZO]->SetDuty(0.52);
+        _motors[MOTOR_ANTEBRAZO]->SetDuty(0.53);
         digitalWrite(BUZZER_PIN,HIGH);
     } else if (strLectura == "ANTE_ANTI0") {
         _motors[MOTOR_ANTEBRAZO]->SetDuty(0);
@@ -61,4 +69,6 @@ void modo_calibracion() {
         _motors[MOTOR_ANTEBRAZO]->SetDuty(0);
         digitalWrite(BUZZER_PIN,LOW);
     }
+
+    
 }
