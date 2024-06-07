@@ -4,57 +4,45 @@
 #include "Control.cpp"  //encontramos lo relacionado con las funciones para el control y los define
 #include "Camara.h"
 #include "Pinza.cpp"
-
+#include "Estados.cpp"
+#include "Buzzer.cpp"
 
 //Variables globales
-float _ref_motores[3]={90,220,90};
-char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
-boolean newData = false; // Bandera para indicar que se han recibido nuevos datos
-//camara
-uint8_t receiver_mac[] = {0x94 , 0xB5 , 0x55 , 0xFC , 0x38 , 0x1C};
-int contador_cam=0;
+float _ref_motores[3]={90,100,90};
 
-int contador=0;
-int contador_servo = 0;
-int angulo_servo = CIERRE_SERVO;
-
-String inputString = "";
-float _ek_pos_base[2]; //error de posicion estado actual y anterior
-float _uk_pos_base[2]; //accion de control actual y anterior
-float _ek_pos_brazo[2]; 
-float _uk_pos_brazo[2]; 
-float _ek_pos_antebrazo[2]; 
-float _uk_pos_antebrazo[2];
-float _integral_motores[3]={0.0,0.0,0.0};
-float u_integral_antebrazo=0;
-float u_integral_base=0;
-
+int contador_consola=0;
 
 hw_timer_t *timer = NULL; //Puntero de variable para configurar timer 
+HardwareSerial Serial_hmi(1);
+
+const int Serial_hmi_RX = 18;
+const int Serial_hmi_TX = 17;
+
+// VARIABLES GLOBALES
+enum estadosControl _estado_control = ESTADO_INICIAL;
+String strLectura;
 
 //Función de prueba con el Timer 0. ISR de la interrupción
 volatile bool has_expired = false;
 void IRAM_ATTR timerInterrupcion() {
   has_expired = true;
-  //printf("Hola \n");
 }
+
 
 /************************* PROGRAMA PRINCIPAL *************************/
 void setup() {
-  Serial.begin(115200);
   //Inicializacion de tablas
   InitTabla(_ek_pos_base,2);
-  InitTabla(_uk_pos_base,2);
   InitTabla(_ek_pos_brazo,2);
-  InitTabla(_uk_pos_brazo,2);
   InitTabla(_ek_pos_antebrazo,2);
-  InitTabla(_uk_pos_antebrazo,2);
+  InitTabla(_uk_pos_brazo,2);
 
   //PRUEBA BUZZER
-  /*pinMode(BUZZER_PIN,OUTPUT);
-  digitalWrite(BUZZER_PIN,HIGH);
-  delay(1500);
-  digitalWrite(BUZZER_PIN,LOW);*/
+  //setupTimerBuzz();
+  pinMode(BUZZER_PIN,OUTPUT);
+  //digitalWrite(BUZZER_PIN,HIGH);
+  //delay(500);
+  //digitalWrite(BUZZER_PIN,LOW);
   // CONFIGURAR AQUI LA INTERRUPCION
   // El código a continuación se utilizó para realizar una prueba con el led RGB con un timer (Timer 0). No es necesario para el funcionamiento del robot*/
   timer = timerBegin(0, 80, true); // Timer 0, clock divider 80
@@ -68,7 +56,6 @@ void setup() {
   _motors[0]=new Driver_L298n(PIN_M1_EN,PIN_M1_IN1,PIN_M1_IN2,PWM_FREQ_HZ );
   _motors[1]=new Driver_L298n(PIN_M2_EN,PIN_M2_IN1,PIN_M2_IN2,PWM_FREQ_HZ );
   _motors[2]=new Driver_L298n(PIN_M3_EN,PIN_M3_IN1,PIN_M3_IN2,PWM_FREQ_HZ );
-  //gpio_iomux_out(PIN_M3_EN, PWM0_OUT2B_IDX, 0);
   _motors[0]->begin();       // Usar _motors[0]->begin() si se ha declarado como array
   _motors[1]->begin(); 
   _motors[2]->begin(); 
@@ -84,26 +71,72 @@ void setup() {
   config_servo();
   Pinza.write(angulo_servo);
 
+  // Comunicación Serial
+  // Serial PC -  ESP32
+  Serial.begin(115200);
+  //gpio_iomux_out(43, U1TXD_OUT_IDX, 0);
+  //gpio_iomux_in(44, U1RXD_IN_IDX);
+  Serial_hmi.begin(115200, SERIAL_8N1, Serial_hmi_RX, Serial_hmi_TX);
+
 }
 
 void loop() {
   //LECTURA DE LAS REFERENCIAS DE ANGULO ,POSTERIORMENTE LAS REFERENCIAS VENDRAN DE LA TRAYECTORIA
-  recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
-  if (newData) { // Si se han recibido nuevos datos
-    parseData(); // Función para convertir los datos a valores flotantes
-    newData = false; // Reinicia la bandera de nuevos datos recibidos
-  }
+  // recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
+  // if (newData) { // Si se han recibido nuevos datos
+  //   parseData(); // Función para convertir los datos a valores flotantes
+  //   newData = false; // Reinicia la bandera de nuevos datos recibidos
+  // }
 
+  if (Serial_hmi.available() > 0) {
+    strLectura = Serial_hmi.readStringUntil('\n');
+    strLectura.trim();
+    Serial.print(strLectura);
+
+    if (strLectura == "INICIAL") {
+      _estado_control = ESTADO_INICIAL;
+    } else if (strLectura == "CALIBRACION") {
+      _estado_control = CALIBRACION;
+    } else if (strLectura == "AUTOMATICO") {
+      _estado_control = AUTOMATICO;
+    } else if (strLectura == "MANUAL") {
+      _estado_control = MANUAL;
+    }
+
+  }
+  /*************************** SWITCH CASE ***************************/
+  switch (_estado_control)
+  {
+  case ESTADO_INICIAL:
+    //tone_buzz(400,500);
+    break;
+
+  case CALIBRACION:
+    //tone_buzz(300,500);
+    break;
+
+  case AUTOMATICO:
+    //tone_buzz(200,500);
+    break;
+
+  case MANUAL:
+    //tone_buzz(100,500);
+    //digitalWrite(BUZZER_PIN,HIGH);
+    modo_manual();
+    break;
+  
+  default:
+    _estado_control=ESTADO_INICIAL;
+    //tone_buzz(20,500);
+    break;
+  }
   //INTERRUPCION PARA REALIZAR EL CONTROL
-     if(has_expired)
+  if(has_expired)
    {
 
       DesplazarTabla(_ek_pos_base,2);
-      DesplazarTabla(_uk_pos_base,2);
       DesplazarTabla(_ek_pos_brazo,2);
-      DesplazarTabla(_uk_pos_brazo,2); //en brazo no se utilza la integral, funciona bien sin ella
       DesplazarTabla(_ek_pos_antebrazo,2);
-      DesplazarTabla(_uk_pos_antebrazo,2);
 
       _ek_pos_base[0]=_ref_motores[0]-(LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE);
       _ek_pos_brazo[0]=_ref_motores[1]-LecturaEncoder(MOTOR_BRAZO); 
@@ -116,15 +149,14 @@ void loop() {
       //ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
       //ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
 
-      contador++;
-      if(contador==25){
+      contador_consola++;
+      if(contador_consola==25){
               //Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
-              //Serial.printf("Error del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,_ek_pos_base[0],u_integral_base);
-              //Serial.printf("Error del motor %d es: %f \n",MOTOR_BRAZO,_ek_pos_brazo[0]);
-              //Serial.printf("Error del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,_ek_pos_antebrazo[0],u_integral_antebrazo);
-
-              contador=0; 
+              //Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE,u_integral_base);
+              //Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
+              //Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE,u_integral_antebrazo);
+              contador_consola=0; 
       }
       /*contador_cam++;
       if(contador_cam==20){
@@ -134,14 +166,14 @@ void loop() {
         contador_cam=0;
       }*/
       contador_servo++;
-      if(contador_servo==10){
-        if (angulo_servo >= APERTURA_SERVO) {
-          angulo_servo = CIERRE_SERVO;
+      if(contador_servo==150){
+        if (angulo_servo >= CIERRE_SERVO) {
+          angulo_servo = APERTURA_SERVO;
         } else {
-          angulo_servo = angulo_servo + 10;
+          angulo_servo = CIERRE_SERVO;
         }
         Pinza.write(angulo_servo);
-        Serial.printf("Angulo del servo: %d\n", angulo_servo);
+        //Serial.printf("Angulo del servo: %d\n", angulo_servo);
         contador_servo=0;
       }
       has_expired = false;

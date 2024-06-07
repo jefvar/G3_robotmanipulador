@@ -2,8 +2,8 @@
 
 //Variables globales
 extern float _ref_motores[3];
-extern char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
-extern boolean newData; // Bandera para indicar que se han recibido nuevos datos
+char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
+boolean newData; // Bandera para indicar que se han recibido nuevos datos
 extern float _ref_motores[3];
 int numValores=3;
 
