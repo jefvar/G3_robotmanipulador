@@ -6,7 +6,7 @@
 #include "Pinza.cpp"
 #include "Estados.cpp"
 #include "Buzzer.cpp"
-//#include "cinematica.cpp"
+#include "cinematica.cpp"
 
 //Variables globales
 float _ref_motores[3]={90,100,90};
@@ -141,9 +141,13 @@ void loop() {
       DesplazarTabla(_ek_pos_brazo,2);
       DesplazarTabla(_ek_pos_antebrazo,2);
 
-      _ek_pos_base[0]=_ref_motores[0]-(LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE);
-      _ek_pos_brazo[0]=_ref_motores[1]-LecturaEncoder(MOTOR_BRAZO); 
-      _ek_pos_antebrazo[0]=_ref_motores[2]-(LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE);  
+      lectura_encoder_base = LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE;
+      lectura_encoder_brazo = LecturaEncoder(MOTOR_BRAZO);
+      lectura_encoder_antebrazo = LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE;
+
+      _ek_pos_base[0]=_ref_motores[0]-lectura_encoder_base;
+      _ek_pos_brazo[0]=_ref_motores[1]-lectura_encoder_brazo; 
+      _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_encoder_antebrazo;  
 
       u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
       u_integral_base=integral(_ek_pos_base[0],&_integral_motores[0],kI_BASE,TS);
@@ -156,9 +160,9 @@ void loop() {
       if(contador_consola==25){
               //Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
-              Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,LecturaEncoder(MOTOR_BASE)/REDUCCION_BASE,u_integral_base);
-              Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,LecturaEncoder(MOTOR_BRAZO));
-              Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE,u_integral_antebrazo);
+              Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,lectura_encoder_base,u_integral_base);
+              Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,lectura_encoder_brazo);
+              Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,lectura_encoder_antebrazo ,u_integral_antebrazo);
               contador_consola=0; 
       }
       /*contador_cam++;

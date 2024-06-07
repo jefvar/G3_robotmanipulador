@@ -1,30 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
-//#include <windows.h>
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <list>
-
-//Valor del paso en la ejecución de trayectoria 
-#define paso 30
-//Longitudes de los eslabones
-#define L1 270
-#define L2 250
-#define L3 100
-//Definición de los valores iniciales de los encoders
-#define def_theta_0 90
-#define def_theta_1 0
-#define def_theta_2 0
-
-//struct para trabajar con tres coordenadas
-struct tres_posiciones {float pos_1; float pos_2; float pos_3;};
-//struct 2 strings
-struct string_two {std:: string string_1; std:: string string_2;};
-//struct 2 int
-struct int_two {int int_1; int int_2;};
+#include "cinematica.h"
 
 //Función Cinemática Directa: Ángulos -> Posición TCP
 struct tres_posiciones f_cinematica_directa(float theta_0, float theta_1, float theta_2){
@@ -115,11 +89,11 @@ struct tres_posiciones f_cinematica_inversa(float x, float y, float z){
 }
 
 //Función Trayectoria Lineal -> Entrada: tres puntos iniciales + tres puntos finales
-std:: vector<float> trayectoria_lineal(float x_inicial, float y_inicial, float z_inicial, float x_final, float y_final, float z_final){
+std::vector<float> trayectoria_lineal(float x_inicial, float y_inicial, float z_inicial, float x_final, float y_final, float z_final){
     //Vectores puntos objetivos durante la trayectoria
-    std:: vector<float> x_objetivo(paso), y_objetivo(paso), z_objetivo(paso);
+    std::vector<float> x_objetivo(paso), y_objetivo(paso), z_objetivo(paso);
     //Vector angulos calculados durante la trayectoria -> control
-    std:: vector<float> angulos_trayectoria(3*paso);
+    std::vector<float> angulos_trayectoria(3*paso);
     
     for (int j = 0; j < paso; ++j){
         x_objetivo[j] = x_inicial + (x_final - x_inicial) * j / (paso - 1);
@@ -136,8 +110,8 @@ std:: vector<float> trayectoria_lineal(float x_inicial, float y_inicial, float z
 }
 
 //Conversión de ángulos
-std:: vector<float> conversión_angulos(std:: vector<float> vector_angulos_programa){
-std:: vector<float> vector_angulos_robot(3*paso);
+std::vector<float> conversion_angulos(std::vector<float> vector_angulos_programa){
+std::vector<float> vector_angulos_robot(3*paso);
     //Valor definido del ángulo de la base
     for (int j = 0; j < paso; ++j){
         vector_angulos_robot[3*j] = def_theta_0 - vector_angulos_programa[3*j];
@@ -159,7 +133,7 @@ struct string_two f_split_pos(std:: string movimiento){
 }
 
 //Función Posiciones 
-std:: vector <float> f_posiciones_inicio_fin(int inicio, int fin){
+std::vector <float> f_posiciones_inicio_fin(int inicio, int fin){
     struct posiciones_tablero {float coord_x; float coord_y; float coord_z;}pos_0, pos_1, pos_2, pos_3, pos_4, 
     pos_5, pos_6, pos_7, pos_8, pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18;
     //Vector donde se almacenan las 6 coordenadas 3punto inicial 3 punto final
