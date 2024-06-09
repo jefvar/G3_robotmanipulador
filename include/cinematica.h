@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 #include <list>
+#include <Arduino.h>
 
 //Valor del paso en la ejecución de trayectoria 
 #define paso 30
@@ -21,10 +22,11 @@
 #define def_theta_1 0
 #define def_theta_2 0
 
+#define separador '.'
 //struct para trabajar con tres coordenadas
 struct tres_posiciones {float pos_1; float pos_2; float pos_3;};
 //struct 2 strings
-struct string_two {std::string string_1; std::string string_2;};
+struct string_two {String string_1; String string_2;};
 //struct 2 int
 struct int_two {int int_1; int int_2;};
 
