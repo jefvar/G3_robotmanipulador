@@ -1,5 +1,5 @@
-#ifndef CONTROL_H
-#define CONTROL_H
+#ifndef BUZZER_H
+#define BUZZER_H
 
 #include <Arduino.h>
 

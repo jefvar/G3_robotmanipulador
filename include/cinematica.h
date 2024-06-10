@@ -31,10 +31,11 @@ struct string_two {String string_1; String string_2;};
 struct int_two {int int_1; int int_2;};
 
 std::vector<float> conversion_angulos(std::vector<float> vector_angulos_programa);
-std::vector<float> trayectoria_lineal(float x_inicial, float y_inicial, float z_inicial, float x_final, float y_final, float z_final);
+std::vector<float> f_trayectoria_lineal(std:: vector <float> vector_2puntos_trayectoria);
 struct tres_posiciones f_cinematica_directa(float theta_0, float theta_1, float theta_2);
 struct tres_posiciones f_cinematica_inversa(float x, float y, float z);
-struct string_two f_split_pos(std::string movimiento);
+struct string_two f_split_pos(String movimiento);
 std::vector <float> f_posiciones_inicio_fin(int inicio, int fin);
+std::vector<float> conversion_angulos_encoder(float theta0_enc, float theta1_enc, float theta2_enc);
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef SERVO_H
-#define SERVO_H
+#ifndef PINZA_H
+#define PINZA_H
 
 #include <ESP32Servo.h>
 

@@ -89,7 +89,7 @@ struct tres_posiciones f_cinematica_inversa(float x, float y, float z){
 }
 
 //Función Trayectoria Lineal -> Entrada: tres puntos iniciales + tres puntos finales
-std::vector<float> trayectoria_lineal(std:: vector <float> vector_2puntos_trayectoria){
+std::vector<float> f_trayectoria_lineal(std:: vector <float> vector_2puntos_trayectoria){
     //Vectores puntos objetivos durante la trayectoria
     std::vector<float> x_objetivo(paso), y_objetivo(paso), z_objetivo(paso);
     //Vector angulos calculados durante la trayectoria -> control
@@ -97,7 +97,7 @@ std::vector<float> trayectoria_lineal(std:: vector <float> vector_2puntos_trayec
     
     for (int j = 0; j < paso; ++j){
         x_objetivo[j] = vector_2puntos_trayectoria[0] + (vector_2puntos_trayectoria[3] - vector_2puntos_trayectoria[0]) * j / (paso - 1);
-        y_objetivo[j] = vector_2puntos_trayectoria[1] + (vector_2puntos_trayectoria[2] - vector_2puntos_trayectoria[1]) * j / (paso - 1);
+        y_objetivo[j] = vector_2puntos_trayectoria[1] + (vector_2puntos_trayectoria[4] - vector_2puntos_trayectoria[1]) * j / (paso - 1);
         z_objetivo[j] = vector_2puntos_trayectoria[2] + (vector_2puntos_trayectoria[5] - vector_2puntos_trayectoria[2]) * j / (paso - 1);
         
         //Cinemática inversa -> paso a ángulos
@@ -121,13 +121,25 @@ std::vector<float> vector_angulos_robot(3*paso);
     return vector_angulos_robot;
 }
 
+//Conversión de ángulos encoder
+std::vector<float> conversion_angulos_encoder(float theta0_enc, float theta1_enc, float theta2_enc){
+    std::vector<float> vector_angulos_encoder(3);
+    // Referencia punto 0.1
+    std::vector<float> referencia_calibracion_pos = f_posiciones_inicio_fin(0, 1);
+    struct tres_posiciones referencia_calibracion_angulo = f_cinematica_inversa(referencia_calibracion_pos[3], referencia_calibracion_pos[4], referencia_calibracion_pos[5]);
+    vector_angulos_encoder[0] = theta0_enc + referencia_calibracion_angulo.pos_1;
+    vector_angulos_encoder[1] = -theta1_enc + referencia_calibracion_angulo.pos_2;
+    vector_angulos_encoder[2] = theta2_enc + referencia_calibracion_angulo.pos_3;
+    return vector_angulos_encoder;
+}
+
 //Función separación del array inicial en pos_fija_inicial y pos_tablero_final
 struct string_two f_split_pos(String movimiento){
     struct string_two digitos;
     int inicio=0, fin;
     fin = movimiento.indexOf(separador,inicio);
     digitos.string_1 = movimiento.substring(inicio,fin);
-    digitos.string_2 = movimiento.substring(fin, movimiento.length()); //revisar que el substring no seleccione el punto -> fin+1
+    digitos.string_2 = movimiento.substring(fin+1); //revisar que el substring no seleccione el punto -> fin+1
     
     return digitos;
 }
@@ -141,79 +153,79 @@ std::vector <float> f_posiciones_inicio_fin(int inicio, int fin){
 
     pos_0.coord_x = 350.75;
     pos_0.coord_y = -37;
-    pos_0.coord_z = -145;
+    pos_0.coord_z = -135;
 
     pos_1.coord_x = 350.75;
     pos_1.coord_y = 0;
-    pos_1.coord_z = -145;
+    pos_1.coord_z = -135;
 
     pos_2.coord_x = 350.75;
     pos_2.coord_y = 37;
-    pos_2.coord_z = -145;
+    pos_2.coord_z = -135;
 
     pos_3.coord_x = 390;
     pos_3.coord_y = -37;
-    pos_3.coord_z = -145;
+    pos_3.coord_z = -135;
 
     pos_4.coord_x = 390;
     pos_4.coord_y = 0;
-    pos_4.coord_z = -145;
+    pos_4.coord_z = -135;
 
     pos_5.coord_x = 390;
     pos_5.coord_y = 37;
-    pos_5.coord_z = -145;
+    pos_5.coord_z = -135;
 
     pos_6.coord_x = 429.25;
     pos_6.coord_y = -37;
-    pos_6.coord_z = -145;
+    pos_6.coord_z = -135;
 
     pos_7.coord_x = 429.25;
     pos_7.coord_y = 0;
-    pos_7.coord_z = -145;
+    pos_7.coord_z = -135;
 
     pos_8.coord_x = 429.25;
     pos_8.coord_y = 37;
-    pos_8.coord_z = -145;
+    pos_8.coord_z = -135;
 
     pos_9.coord_x = 320;
     pos_9.coord_y = -70;
-    pos_9.coord_z = -145;
+    pos_9.coord_z = -135;
 
     pos_10.coord_x = 355;
     pos_10.coord_y = 70;
-    pos_10.coord_z = -145;
+    pos_10.coord_z = -135;
 
     pos_11.coord_x = 390;
     pos_11.coord_y = -70;
-    pos_11.coord_z = -145;
+    pos_11.coord_z = -135;
 
     pos_12.coord_x = 425;
     pos_12.coord_y = -70;
-    pos_12.coord_z = -145;
+    pos_12.coord_z = -135;
 
     pos_13.coord_x = 460;
     pos_13.coord_y = -70;
-    pos_13.coord_z = -145;
+    pos_13.coord_z = -135;
 
     pos_14.coord_x = 320;
     pos_14.coord_y = 70;
-    pos_14.coord_z = -145;
+    pos_14.coord_z = -135;
 
     pos_15.coord_x = 355;
     pos_15.coord_y = 70;
-    pos_15.coord_z = -145;
+    pos_15.coord_z = -135;
 
     pos_16.coord_x = 390;
     pos_16.coord_y = 70;
-    pos_16.coord_z = -145;
+    pos_16.coord_z = -135;
 
     pos_17.coord_x = 425;
     pos_17.coord_y = 70;
-    pos_17.coord_z = -145;
+    pos_17.coord_z = -135;
 
     pos_18.coord_x = 460;
     pos_18.coord_y = 70;
-    pos_18.coord_z = -145;
+    pos_18.coord_z = -135;
 
     //vector que almacena las posiciones del tablero
     std::vector<posiciones_tablero> pos_tablero{pos_0, pos_1, pos_2, pos_3, pos_4, pos_5, pos_6, pos_7, pos_8};
