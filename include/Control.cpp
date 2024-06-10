@@ -28,6 +28,13 @@ void DesplazarTabla(float t[], int n)//no ponemos const porque necesitamos modif
     }
 
 }
+float RelLineal(float x,float x1,float x2,float y1,float y2)
+{
+   float escalamiento;
+    //     y=    (x -x1) (y2- y1)/(x2-x1)+ y1    ecuacion de una recta
+    escalamiento=((x-x1)*((y2-y1)/(x2-x1)))+y1;
+    return escalamiento;
+}
 
 void recvWithEndMarker() {
   static byte ndx = 0; // Índice del buffer
@@ -91,6 +98,10 @@ float LecturaEncoder(int n_motor){
   if (pos_m!=0x80000000) { 
         ang=pos_m*360.0/4096.0;
         //Serial.printf("La posicion del motor %d es: %f \n", n_motor,ang);
+  }
+  if(ang>=180 && ang<360){
+    ang=RelLineal(ang,180.0,360.0,-180.0,0.0);
+    //ang=ang-360;
   }
   return ang;
 }

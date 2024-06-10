@@ -9,10 +9,14 @@
 #include "cinematica.cpp"
 
 //Variables globales
-float _ref_motores[3]={90,100,90};
+// float _ref_motores[3]={90,100,90};
+float _ref_motores[3]={0,30,90};
 
 int contador_consola=0;
 int contador_jeff = 0;
+int contador_trayectoria = 0;
+int contador_pasos = 0;
+
 hw_timer_t *timer = NULL; //Puntero de variable para configurar timer 
 HardwareSerial Serial_hmi(1);
 
@@ -22,6 +26,7 @@ const int Serial_hmi_TX = 17;
 // VARIABLES GLOBALES
 enum estadosControl _estado_control = ESTADO_INICIAL;
 String strLectura;
+std::vector<float> lectura_enc_cin(3);
 
 //Función de prueba con el Timer 0. ISR de la interrupción
 volatile bool has_expired = false;
@@ -134,7 +139,7 @@ void loop() {
   }
   //INTERRUPCION PARA REALIZAR EL CONTROL
   //if(has_expired)
-  if(has_expired)
+  if(has_expired & flag_manual)
    {
 
       DesplazarTabla(_ek_pos_base,2);
@@ -145,24 +150,35 @@ void loop() {
       lectura_encoder_brazo = LecturaEncoder(MOTOR_BRAZO);
       lectura_encoder_antebrazo = LecturaEncoder(MOTOR_ANTEBRAZO)/REDUCCION_BASE;
 
-      _ek_pos_base[0]=_ref_motores[0]-lectura_encoder_base;
-      _ek_pos_brazo[0]=_ref_motores[1]-lectura_encoder_brazo; 
-      _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_encoder_antebrazo;  
+      lectura_enc_cin = conversion_angulos_encoder(lectura_encoder_base, lectura_encoder_brazo, lectura_encoder_antebrazo);
+
+      // _ek_pos_base[0]=_ref_motores[0]-lectura_encoder_base;
+      // _ek_pos_brazo[0]=_ref_motores[1]-lectura_encoder_brazo; 
+      // _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_encoder_antebrazo;  
+      _ek_pos_base[0]=_ref_motores[0]-lectura_enc_cin[0];
+      _ek_pos_brazo[0]=_ref_motores[1]-lectura_enc_cin[1]; 
+      _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_enc_cin[2];  
 
       u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
       u_integral_base=integral(_ek_pos_base[0],&_integral_motores[0],kI_BASE,TS);
 
-      //ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
-      //ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
-      //ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
+      ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
+      ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
+      ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
 
       contador_consola++;
       if(contador_consola==25){
               //Serial.printf("_ek_pos_base: %f, _ek_pos_brazo: %f, _ek_pos_ante: %f \n",_ek_pos_base[0],_ek_pos_brazo[0],_ek_pos_antebrazo[0]);
               //printf("Accion integral: %f \n",u_integral_antebrazo);
-              Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,lectura_encoder_base,u_integral_base);
-              Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,lectura_encoder_brazo);
-              Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,lectura_encoder_antebrazo ,u_integral_antebrazo);
+              // Serial.printf("Posicion del motor %d es: %f, u_integral: %f \n",MOTOR_BASE,lectura_encoder_base,u_integral_base);
+              // Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,lectura_encoder_brazo);
+              // Serial.printf("Posicion del motor %d es: %f , u_integral: %f \n",MOTOR_ANTEBRAZO,lectura_encoder_antebrazo ,u_integral_antebrazo);
+              // Serial.printf("Posicion del motor %d es: %f:\n",MOTOR_BASE, lectura_enc_cin[0]);
+              // Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,lectura_enc_cin[1]);
+              // Serial.printf("Posicion del motor %d es: %f \n",MOTOR_ANTEBRAZO, lectura_enc_cin[2]);
+              //Serial.printf("Error del motor %d es: %f:\n",MOTOR_BASE, _ek_pos_base[0]);
+              //Serial.printf("Error del motor %d es: %f \n",MOTOR_BRAZO,_ek_pos_brazo[0]);
+              //Serial.printf("Error del motor %d es: %f \n",MOTOR_ANTEBRAZO, _ek_pos_antebrazo[0]);
               contador_consola=0; 
       }
       /*contador_cam++;
@@ -196,6 +212,34 @@ void loop() {
       //   //Serial.printf("Angulo del servo: %d\n", angulo_servo);
       //   contador_servo=0;
       // }
+
+
+      contador_trayectoria++;
+      if(contador_trayectoria==50){
+        if(contador_pasos<30){
+          if(contador_pasos==0) {
+            cerrar_servo();
+          }
+          _ref_motores[MOTOR_BASE]=trayectoria_total[3*contador_pasos];
+          _ref_motores[MOTOR_BRAZO]=trayectoria_total[1+3*contador_pasos];
+          _ref_motores[MOTOR_ANTEBRAZO]=trayectoria_total[2+3*contador_pasos];
+          Serial.printf("Referencia del motor %d es: %f:\n",MOTOR_BASE, _ref_motores[MOTOR_BASE]);
+          Serial.printf("Referencia del motor %d es: %f \n",MOTOR_BRAZO,_ref_motores[MOTOR_BRAZO]);
+          Serial.printf("Referencia del motor %d es: %f \n",MOTOR_ANTEBRAZO, _ref_motores[MOTOR_ANTEBRAZO]);
+          Serial.printf("Posicion del motor %d es: %f:\n",MOTOR_BASE, lectura_enc_cin[0]);
+          Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,lectura_enc_cin[1]);
+          Serial.printf("Posicion del motor %d es: %f \n",MOTOR_ANTEBRAZO, lectura_enc_cin[2]);
+          contador_pasos++;
+          
+        }
+        else{
+          contador_pasos=0;
+          flag_manual=false;
+          abrir_servo();
+        }
+        contador_trayectoria=0;
+      }
+
 
       has_expired = false;
    }

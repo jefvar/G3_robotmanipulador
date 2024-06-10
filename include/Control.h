@@ -66,13 +66,14 @@ float _uk_pos_base[2]; //accion de control actual y anterior
 float _ek_pos_brazo[2]; 
 float _uk_pos_brazo[2]; 
 float _ek_pos_antebrazo[2];                 
-// float _uk_pos_antebrazo[2];
+float _uk_pos_antebrazo[2];
 float _integral_motores[3]={0.0,0.0,0.0};
 float u_integral_antebrazo=0;
 float u_integral_base=0;
 
 void InitTabla(float t[], int n);
 void DesplazarTabla(float t[], int n);
+float RelLineal(float x,float x1,float x2,float y1,float y2);
 void recvWithEndMarker();
 void parseData();
 
