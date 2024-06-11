@@ -1,0 +1,5 @@
+﻿  Server.cpp
+C:\Users\jorgi\Documents\EU4M_Segundo_Semestre\VisionArtificial\OpenCV\Prueba1\Prueba1\Prueba1\Server.cpp(100,31): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\jorgi\Documents\EU4M_Segundo_Semestre\VisionArtificial\OpenCV\Prueba1\Prueba1\Prueba1\Server.cpp(140,39): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+C:\Users\jorgi\Documents\EU4M_Segundo_Semestre\VisionArtificial\OpenCV\Prueba1\Prueba1\Prueba1\Server.cpp(91,9): warning C4101: 'matriz': unreferenced local variable
+  Prueba1.vcxproj -> C:\Users\jorgi\Documents\EU4M_Segundo_Semestre\VisionArtificial\OpenCV\Prueba1\Prueba1\x64\Debug\Prueba1.exe
