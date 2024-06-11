@@ -147,10 +147,12 @@ struct string_two f_split_pos(String movimiento){
 //Función para obtener las coordenadas xyz de los puntos inicial y final de la trayectoria
 std::vector <float> f_posiciones_inicio_fin(int inicio, int fin){
     struct posiciones_tablero {float coord_x; float coord_y; float coord_z;}pos_0, pos_1, pos_2, pos_3, pos_4, 
-    pos_5, pos_6, pos_7, pos_8, pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18;
+    pos_5, pos_6, pos_7, pos_8, pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18,
+    pos_19, pos_20, pos_21, pos_22, pos_23, pos_24, pos_25, pos_26,pos_27, pos_28,
+    pos_29, pos_30, pos_31, pos_32, pos_33, pos_34, pos_35, pos_36, pos_37, pos_38, pos_39;
     //Vector donde se almacenan las 6 coordenadas 3punto inicial 3 punto final
-    std:: vector<float> vector_2puntos_trayectoria(6);
-
+    std:: vector<float> vector_9puntos_trayectoria(27);
+    //Posiciones en el tablero
     pos_0.coord_x = 350.75;
     pos_0.coord_y = -37;
     pos_0.coord_z = -135;
@@ -187,6 +189,7 @@ std::vector <float> f_posiciones_inicio_fin(int inicio, int fin){
     pos_8.coord_y = 37;
     pos_8.coord_z = -135;
 
+    //Posiciones fijas de las fichas
     pos_9.coord_x = 320;
     pos_9.coord_y = -70;
     pos_9.coord_z = -135;
@@ -227,24 +230,175 @@ std::vector <float> f_posiciones_inicio_fin(int inicio, int fin){
     pos_18.coord_y = 70;
     pos_18.coord_z = -135;
 
+    //Posiciones fijas de las fichas elevadas a z=-95
+    pos_19.coord_x = 320;
+    pos_19.coord_y = -70;
+    pos_19.coord_z = -95;
+
+    pos_20.coord_x = 355;
+    pos_20.coord_y = 70;
+    pos_20.coord_z = -95;
+
+    pos_21.coord_x = 390;
+    pos_21.coord_y = -70;
+    pos_21.coord_z = -95;
+
+    pos_22.coord_x = 425;
+    pos_22.coord_y = -70;
+    pos_22.coord_z = -95;
+
+    pos_23.coord_x = 460;
+    pos_23.coord_y = -70;
+    pos_23.coord_z = -95;
+
+    pos_24.coord_x = 320;
+    pos_24.coord_y = 70;
+    pos_24.coord_z = -95;
+
+    pos_25.coord_x = 355;
+    pos_25.coord_y = 70;
+    pos_25.coord_z = -95;
+
+    pos_26.coord_x = 390;
+    pos_26.coord_y = 70;
+    pos_26.coord_z = -95;
+
+    pos_27.coord_x = 425;
+    pos_27.coord_y = 70;
+    pos_27.coord_z = -95;
+
+    pos_28.coord_x = 460;
+    pos_28.coord_y = 70;
+    pos_28.coord_z = -95;
+
+    //Posiciones elevadas del tablero a z=-95
+    pos_29.coord_x = 350.75;
+    pos_29.coord_y = -37;
+    pos_29.coord_z = -95;
+
+    pos_30.coord_x = 350.75;
+    pos_30.coord_y = 0;
+    pos_30.coord_z = -95;
+
+    pos_31.coord_x = 350.75;
+    pos_31.coord_y = 37;
+    pos_31.coord_z = -95;
+
+    pos_32.coord_x = 390;
+    pos_32.coord_y = -37;
+    pos_32.coord_z = -95;
+
+    pos_33.coord_x = 390;
+    pos_33.coord_y = 0;
+    pos_33.coord_z = -95;
+
+    pos_34.coord_x = 390;
+    pos_34.coord_y = 37;
+    pos_34.coord_z = -95;
+
+    pos_35.coord_x = 429.25;
+    pos_35.coord_y = -37;
+    pos_35.coord_z = -95;
+
+    pos_36.coord_x = 429.25;
+    pos_36.coord_y = 0;
+    pos_36.coord_z = -95;
+
+    pos_37.coord_x = 429.25;
+    pos_37.coord_y = 37;
+    pos_37.coord_z = -95;
+
+    //Posición de referencia 
+    pos_38.coord_x = 390;
+    pos_38.coord_y = 0;
+    pos_38.coord_z = -80;
+
+    //Posición HOME
+    pos_39.coord_x = 360;
+    pos_39.coord_y = 0;
+    pos_39.coord_z = -80;
+    
     //vector que almacena las posiciones del tablero
     std::vector<posiciones_tablero> pos_tablero{pos_0, pos_1, pos_2, pos_3, pos_4, pos_5, pos_6, pos_7, pos_8};
     //vector que almacenas las posiciones fijas/de inicio
     std::vector<posiciones_tablero> pos_fijas{pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18};
+    //vector que almacenas las posiciones fijas/ con z elevada + posicion de referencia con z elevada en el tablero
+    std::vector<posiciones_tablero> pos_fijas_altura{pos_19, pos_20, pos_21, pos_22, pos_23, pos_24, pos_25, pos_26, pos_27, pos_28};
+    //vector que almacenas las posiciones tablero/ con z elevada + posicion de referencia con z elevada en el tablero
+    std::vector<posiciones_tablero> pos_tablero_altura{pos_29, pos_30, pos_31, pos_32, pos_33, pos_34, pos_35, pos_36, pos_37};
+    //HOME y REFERENCIA
+    std::vector<posiciones_tablero> pos_referencia{pos_38, pos_39};
     
     for (int i = 0; i < 1; i++)
     {
-        vector_2puntos_trayectoria[3*i] = pos_fijas[inicio].coord_x;
-        vector_2puntos_trayectoria[3*i+1] = pos_fijas[inicio].coord_y;
-        vector_2puntos_trayectoria[3*i+2] = pos_fijas[inicio].coord_z;
+        //Primera posición HOME
+        vector_9puntos_trayectoria[3*i] = pos_referencia[1].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_referencia[1].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_referencia[1].coord_z;
     }
 
     for (int i = 1; i < 2; i++)
     {
-        vector_2puntos_trayectoria[3*i] = pos_tablero[fin].coord_x;
-        vector_2puntos_trayectoria[3*i+1] = pos_tablero[fin].coord_y;
-        vector_2puntos_trayectoria[3*i+2] = pos_tablero[fin].coord_z;
+        //Posición fija en altura
+        vector_9puntos_trayectoria[3*i] = pos_fijas_altura[inicio].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_fijas_altura[inicio].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_fijas_altura[inicio].coord_z;
+    }
+
+    for (int i = 2; i < 3; i++)
+    {
+        //Posición fija abajo
+        vector_9puntos_trayectoria[3*i] = pos_fijas[inicio].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_fijas[inicio].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_fijas[inicio].coord_z;
+    }
+
+    for (int i = 3; i < 4; i++)
+    {
+        //Posición fija abajo
+        vector_9puntos_trayectoria[3*i] = pos_fijas_altura[inicio].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_fijas_altura[inicio].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_fijas_altura[inicio].coord_z;
+    }
+
+    for (int i = 4; i < 5; i++)
+    {
+        //Posición referencia
+        vector_9puntos_trayectoria[3*i] = pos_referencia[2].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_referencia[2].coord_x;
+        vector_9puntos_trayectoria[3*i+2] = pos_referencia[2].coord_x;
+    }
+
+    for (int i = 5; i < 6; i++)
+    {
+        //Posición tablero altura
+        vector_9puntos_trayectoria[3*i] = pos_tablero_altura[fin].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_tablero_altura[fin].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_tablero_altura[fin].coord_z;
+    }
+
+    for (int i = 6; i < 7; i++)
+    {
+        //Posición tablero abajo
+        vector_9puntos_trayectoria[3*i] = pos_tablero[fin].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_tablero[fin].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_tablero[fin].coord_z;
     }
     
-    return vector_2puntos_trayectoria;
+    for (int i = 7; i < 8; i++)
+    {
+        //Posición tablero altura
+        vector_9puntos_trayectoria[3*i] = pos_tablero_altura[fin].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_tablero_altura[fin].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_tablero_altura[fin].coord_z;
+    }
+
+    for (int i = 8; i < 9; i++)
+    {
+        //Última posición HOME
+        vector_9puntos_trayectoria[3*i] = pos_referencia[1].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_referencia[1].coord_y;
+        vector_9puntos_trayectoria[3*i+2] = pos_referencia[1].coord_z;
+    }
+    return vector_9puntos_trayectoria;
 }
