@@ -4,7 +4,6 @@
 extern float _ref_motores[3];
 char receivedChars[32]; // Buffer para almacenar los caracteres recibidos del puerto serial
 boolean newData; // Bandera para indicar que se han recibido nuevos datos
-extern float _ref_motores[3];
 int numValores=3;
 
 //FUNCIONES PARA TRATAMIENDO DE TABLAS
@@ -134,7 +133,7 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
     u_prop=kp*error[0];
     u_der=kd*(error[0]-error[1])/Ts;
 
-    if(error[0]<=2 && error[0]>=-2){    // Base y antebrazo error en eje conductor es 1º
+    if(error[0]<=1 && error[0]>=-1){    // Base y antebrazo error en eje conductor es 1º
       u_prop=0;
       u_der=0;
       u_integral=0;
@@ -171,7 +170,7 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
 
 //Funcion que realiza control
 //void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float *integral_sum,float Ts,int n_motor)//descomentar lo de abajo para la parte integral
-void ControlPD_POS(float error[2],float uk[2],float kp,float kd,float Ts,int n_motor,float saturacion)
+void ControlPD_POS(float error[2],float uk[2],float kp,float kd, float u_integral,float Ts,int n_motor,float saturacion)
 { 
     float duty=0;
     float u_prop=0,u_der=0;
@@ -182,9 +181,10 @@ void ControlPD_POS(float error[2],float uk[2],float kp,float kd,float Ts,int n_m
     if(error[0]<=1 && error[0]>=-1){    // Brazo error en eje conductor es 1º
       u_prop=0;
       u_der=0;
+      u_integral=0;
     }  
 
-    duty=u_prop+u_der;       
+    duty=u_prop+u_integral+u_der;       
     if(duty>=saturacion)
     {
       duty=saturacion;

@@ -28,14 +28,15 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 #define MOTOR_BRAZO 1
 #define MOTOR_ANTEBRAZO 2
 #define KP_M_BASE 0.07 //calibrado con 0.07
-#define KP_M_BRAZO 0.04
+#define KP_M_BRAZO 0.035
 #define KP_M_ANTEBRAZO 0.03
 #define KD_M_BASE 0.005 //calibrado con 0.005
-#define KD_M_BRAZO 0.001
+#define KD_M_BRAZO 0.008
 #define KD_M_ANTEBRAZO 0.001
 #define TS 0.02 //tiempo de muestreo
 #define kI_ANTEBRAZO 0.05//0.01
 #define kI_BASE 0.03 //calibrado con 0.03
+#define kI_BRAZO 0.02 
 
 #define DUTY_BASE 1.0
 #define DUTY_BRAZO 1.0
@@ -70,6 +71,7 @@ float _uk_pos_antebrazo[2];
 float _integral_motores[3]={0.0,0.0,0.0};
 float u_integral_antebrazo=0;
 float u_integral_base=0;
+float u_integral_brazo=0;
 
 void InitTabla(float t[], int n);
 void DesplazarTabla(float t[], int n);
@@ -82,7 +84,7 @@ float LecturaEncoder(int n_motor);
 float integral(float error, float *integral_sum, float K_i, float Ts);
 //void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float integral,int n_motor);//opcion separa de la integral
 void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion);
-void ControlPD_POS(float error[2],float uk[2],float kp,float kd,float Ts,int n_motor,float saturacion);
+void ControlPD_POS(float error[2],float uk[2],float kp,float kd, float u_integral, float Ts,int n_motor,float saturacion);
 
 
 #endif //

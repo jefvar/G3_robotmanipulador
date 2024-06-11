@@ -20,5 +20,4 @@ void config_servo();
 void abrir_servo();
 void cerrar_servo();
 
-
 #endif
