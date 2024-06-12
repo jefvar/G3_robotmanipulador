@@ -101,13 +101,13 @@ void modo_calibracion() {
         _motors[MOTOR_BRAZO]->SetDuty(0);
         digitalWrite(BUZZER_PIN,LOW);
     } else if (strLectura == "ANTE_ANTI1") {
-        _motors[MOTOR_ANTEBRAZO]->SetDuty(0.56);
+        _motors[MOTOR_ANTEBRAZO]->SetDuty(0.60);        // Bajada
         digitalWrite(BUZZER_PIN,HIGH);
     } else if (strLectura == "ANTE_ANTI0") {
         _motors[MOTOR_ANTEBRAZO]->SetDuty(0);
         digitalWrite(BUZZER_PIN,LOW);
     } else if (strLectura == "ANTE_HORA1") {
-        _motors[MOTOR_ANTEBRAZO]->SetDuty(-0.64);
+        _motors[MOTOR_ANTEBRAZO]->SetDuty(-0.69);        // Subida
         digitalWrite(BUZZER_PIN,HIGH);
     } else if (strLectura == "ANTE_HORA0") {
         _motors[MOTOR_ANTEBRAZO]->SetDuty(0);
@@ -167,8 +167,8 @@ void modos_interrupcion() {
 
     lectura_enc_cin = conversion_angulos_encoder(lectura_encoder_base, lectura_encoder_brazo, lectura_encoder_antebrazo);
 
-    // if ((lectura_enc_cin[0]>=60 || lectura_enc_cin[0]<=-60) || (lectura_enc_cin[1]>=70 || lectura_enc_cin[1]<=10) || (lectura_enc_cin[2]>=135 || lectura_enc_cin[2]<=45)) {
-    if ((lectura_enc_cin[0]>=10 || lectura_enc_cin[0]<=-10) ) {
+    // if ((lectura_enc_cin[0]>=45 || lectura_enc_cin[0]<=-45) || (lectura_enc_cin[1]>=70 || lectura_enc_cin[1]<=10) || (lectura_enc_cin[2]>=135 || lectura_enc_cin[2]<=45)) {
+    if ((lectura_enc_cin[0]>=45 || lectura_enc_cin[0]<=-45) ) {
         _motors[MOTOR_BASE]->SetDuty(0);
         _motors[MOTOR_BRAZO]->SetDuty(0);
         _motors[MOTOR_ANTEBRAZO]->SetDuty(0);
