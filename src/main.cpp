@@ -79,16 +79,16 @@ void setup() {
   //gpio_iomux_out(43, U1TXD_OUT_IDX, 0);
   //gpio_iomux_in(44, U1RXD_IN_IDX);
   Serial_hmi.begin(115200, SERIAL_8N1, Serial_hmi_RX, Serial_hmi_TX);
-
+  changePage(0);
 }
 
 void loop() {
   //LECTURA DE LAS REFERENCIAS DE ANGULO ,POSTERIORMENTE LAS REFERENCIAS VENDRAN DE LA TRAYECTORIA
-  // recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
-  // if (newData) { // Si se han recibido nuevos datos
-  //   parseData(); // Función para convertir los datos a valores flotantes
-  //   newData = false; // Reinicia la bandera de nuevos datos recibidos
-  // }
+  recvWithEndMarker(); // Función para recibir los datos desde el puerto serial
+  if (newData) { // Si se han recibido nuevos datos
+    parseData(); // Función para convertir los datos a valores flotantes
+    newData = false; // Reinicia la bandera de nuevos datos recibidos
+  }
 
   if (Serial_hmi.available() > 0) {
     strLectura = Serial_hmi.readStringUntil('\n');

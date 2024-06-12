@@ -126,7 +126,7 @@ float integral(float error, float *integral_sum, float K_i, float Ts) {
     float output = K_i * (*integral_sum);
     return output;
 }
-void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion){
+void ControlPID_POS(float error[2],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion){
     float duty=0;
     float u_prop=0,u_der=0;
 
@@ -167,10 +167,45 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
    // _motors[n_motor]->SetDuty(uk[0]);//con esta opcion se hace como nacho en control de velocidad
 }
 
+void ControlPID_POS_ANTEBRAZO(float error[2],float kp_up,float kp_down,float kd_up,float kd_down,float u_integral,float Ts,float saturacion){
+    float duty=0;
+    float u_prop=0,u_der=0;
+
+    // Control en la subida
+    if (error[0]<-0.25) {
+      u_prop=kp_up*error[0];
+      u_der=kd_up*(error[0]-error[1])/Ts;
+    }
+    // Tolerancia
+    else if(error[0]<=0.25 && error[0]>=-0.25){    // Base y antebrazo error en eje conductor es 1º
+      u_prop=0;
+      u_der=0;
+      u_integral=0;
+    }
+    // Control en la bajada
+    else if(error[0]>0.25) {
+      u_prop=kp_down*error[0];
+      u_der=kd_down*(error[0]-error[1])/Ts;
+    }  
+
+    duty=u_prop+u_integral+u_der;
+
+    // Saturación
+    if(duty>=saturacion) {
+      duty=saturacion;
+    }
+    else if(duty<=-saturacion)
+    {
+      duty=-saturacion;
+    }
+    _motors[MOTOR_ANTEBRAZO]->SetDuty(duty);
+
+}
+
 
 //Funcion que realiza control
 //void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float *integral_sum,float Ts,int n_motor)//descomentar lo de abajo para la parte integral
-void ControlPD_POS(float error[2],float uk[2],float kp,float kd, float u_integral,float Ts,int n_motor,float saturacion)
+void ControlPD_POS(float error[2],float kp,float kd, float u_integral,float Ts,int n_motor,float saturacion)
 { 
     float duty=0;
     float u_prop=0,u_der=0;
@@ -196,4 +231,10 @@ void ControlPD_POS(float error[2],float uk[2],float kp,float kd, float u_integra
     //Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
     //Se aplica el control segun el numero del motor 
     _motors[n_motor]->SetDuty(duty);
+}
+
+void ControlPID_POS_HOME(float errorbase[2],float errorbrazo[2], float errorante[2],float u_integral_base, float u_integral_brazo,float u_integral_ante) {
+  ControlPID_POS(errorbase,0.07,0.005,u_integral_base,TS,MOTOR_BASE,0.8);
+  ControlPD_POS(errorbrazo,0.035,0.008,u_integral_brazo,TS,MOTOR_BRAZO,0.8);
+  ControlPID_POS_ANTEBRAZO(errorante,0.03,0.03,0.001,0.001,u_integral_ante,TS,0.8);
 }
