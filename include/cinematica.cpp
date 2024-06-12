@@ -145,7 +145,7 @@ struct string_two f_split_pos(String movimiento){
 }
 
 //Función para obtener las coordenadas xyz de los puntos inicial y final de la trayectoria
-std::vector <float> f_posiciones_inicio_fin(int inicio, int fin){
+std::vector <float> f_posiciones_9puntos(int inicio, int fin){
     struct posiciones_tablero {float coord_x; float coord_y; float coord_z;}pos_0, pos_1, pos_2, pos_3, pos_4, 
     pos_5, pos_6, pos_7, pos_8, pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18,
     pos_19, pos_20, pos_21, pos_22, pos_23, pos_24, pos_25, pos_26,pos_27, pos_28,
@@ -401,4 +401,109 @@ std::vector <float> f_posiciones_inicio_fin(int inicio, int fin){
         vector_9puntos_trayectoria[3*i+2] = pos_referencia[1].coord_z;
     }
     return vector_9puntos_trayectoria;
+}
+
+std::vector <float> f_posiciones_2puntos(int inicio, int fin){
+    struct posiciones_tablero {float coord_x; float coord_y; float coord_z;}pos_0, pos_1, pos_2, pos_3, pos_4, 
+    pos_5, pos_6, pos_7, pos_8, pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18;
+    std:: vector<float> vector_2puntos_trayectoria(6);
+    //Posiciones en el tablero
+    pos_0.coord_x = 350.75;
+    pos_0.coord_y = -37;
+    pos_0.coord_z = -135;
+
+    pos_1.coord_x = 350.75;
+    pos_1.coord_y = 0;
+    pos_1.coord_z = -135;
+
+    pos_2.coord_x = 350.75;
+    pos_2.coord_y = 37;
+    pos_2.coord_z = -135;
+
+    pos_3.coord_x = 390;
+    pos_3.coord_y = -37;
+    pos_3.coord_z = -135;
+
+    pos_4.coord_x = 390;
+    pos_4.coord_y = 0;
+    pos_4.coord_z = -135;
+
+    pos_5.coord_x = 390;
+    pos_5.coord_y = 37;
+    pos_5.coord_z = -135;
+
+    pos_6.coord_x = 429.25;
+    pos_6.coord_y = -37;
+    pos_6.coord_z = -135;
+
+    pos_7.coord_x = 429.25;
+    pos_7.coord_y = 0;
+    pos_7.coord_z = -135;
+
+    pos_8.coord_x = 429.25;
+    pos_8.coord_y = 37;
+    pos_8.coord_z = -135;
+
+    //Posiciones fijas de las fichas
+    pos_9.coord_x = 320;
+    pos_9.coord_y = -70;
+    pos_9.coord_z = -135;
+
+    pos_10.coord_x = 355;
+    pos_10.coord_y = 70;
+    pos_10.coord_z = -135;
+
+    pos_11.coord_x = 390;
+    pos_11.coord_y = -70;
+    pos_11.coord_z = -135;
+
+    pos_12.coord_x = 425;
+    pos_12.coord_y = -70;
+    pos_12.coord_z = -135;
+
+    pos_13.coord_x = 460;
+    pos_13.coord_y = -70;
+    pos_13.coord_z = -135;
+
+    pos_14.coord_x = 320;
+    pos_14.coord_y = 70;
+    pos_14.coord_z = -135;
+
+    pos_15.coord_x = 355;
+    pos_15.coord_y = 70;
+    pos_15.coord_z = -135;
+
+    pos_16.coord_x = 390;
+    pos_16.coord_y = 70;
+    pos_16.coord_z = -135;
+
+    pos_17.coord_x = 425;
+    pos_17.coord_y = 70;
+    pos_17.coord_z = -135;
+
+    pos_18.coord_x = 460;
+    pos_18.coord_y = 70;
+    pos_18.coord_z = -135;
+
+    //vector que almacena las posiciones del tablero
+    std::vector<posiciones_tablero> pos_tablero{pos_0, pos_1, pos_2, pos_3, pos_4, pos_5, pos_6, pos_7, pos_8};
+    //vector que almacenas las posiciones fijas/de inicio
+    std::vector<posiciones_tablero> pos_fijas{pos_9, pos_10, pos_11, pos_12, pos_13, pos_14, pos_15, pos_16, pos_17, pos_18};
+
+    for (int i = 0; i < 1; i++)
+    {
+        //Posición tablero altura
+        vector_2puntos_trayectoria[3*i] = pos_fijas[inicio].coord_x;
+        vector_2puntos_trayectoria[3*i+1] = pos_fijas[inicio].coord_y;
+        vector_2puntos_trayectoria[3*i+2] = pos_fijas[inicio].coord_z;
+    }
+
+    for (int i = 1; i < 2; i++)
+    {
+        //Última posición HOME
+        vector_2puntos_trayectoria[3*i] = pos_tablero[fin].coord_x;
+        vector_2puntos_trayectoria[3*i+1] = pos_tablero[fin].coord_y;
+        vector_2puntos_trayectoria[3*i+2] = pos_tablero[fin].coord_z;
+    }
+    return vector_2puntos_trayectoria;
 }
