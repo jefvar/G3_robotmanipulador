@@ -13,6 +13,14 @@ string_two pos_ini_end;
 
 bool flag_manual=false;
 
+void changePage(int page_id) {
+  Serial_hmi.print("page ");
+  Serial_hmi.print(page_id);
+  Serial_hmi.write(0xFF); // Enviar terminador
+  Serial_hmi.write(0xFF); // Enviar terminador
+  Serial_hmi.write(0xFF); // Enviar terminador
+}
+
 void modo_manual()  {
     
     if(strLectura != "end" && strLectura != "MANUAL" && strLectura != "" && flag_manual==false) {
@@ -20,7 +28,7 @@ void modo_manual()  {
         strLectura = "";
         pos_trayectoria.int_1 = pos_ini_end.string_1.toInt();
         pos_trayectoria.int_2 = pos_ini_end.string_2.toInt();
-        trayectoria_ini_end = f_posiciones_inicio_fin(pos_trayectoria.int_1, pos_trayectoria.int_2);
+        trayectoria_ini_end = f_posiciones_2puntos(pos_trayectoria.int_1, pos_trayectoria.int_2);
         trayectoria_total = f_trayectoria_lineal(trayectoria_ini_end);
         for (int i = 0; i < 3*paso; i++)
         {
@@ -130,8 +138,49 @@ void modo_calibracion() {
         _encoder1->SetZero(MOTOR_BASE);
         _encoder1->SetZero(MOTOR_BRAZO);
         _encoder1->SetZero(MOTOR_ANTEBRAZO);
+        strLectura="";
     }
     
+    if(strLectura == "ENC_BASE") {
+    
+        dtostrf(lectura_enc_cin[0],6,3,buffer);
+        Serial_hmi.print("t0.txt=\"");
+        Serial_hmi.print(buffer);
+        // Serial_hmi.print("°");
+        Serial_hmi.print("\"");
+        Serial_hmi.write(0xff);
+        Serial_hmi.write(0xff);
+        Serial_hmi.write(0xff);
+        memset(buffer, 0, sizeof(buffer));
+        strLectura="";
+
+    } else if (strLectura == "ENC_BRAZO") {
+        //Con esta opcion funciona en caja de texto para la variable, habra que ver si funciona para el encoder
+        //value=value+1;
+        dtostrf(lectura_enc_cin[1],7,3,buffer);
+        Serial_hmi.print("t0.txt=\"");
+        Serial_hmi.print(buffer);
+        Serial_hmi.print("\"");
+        Serial_hmi.write(0xff);
+        Serial_hmi.write(0xff);
+        Serial_hmi.write(0xff);
+        memset(buffer, 0, sizeof(buffer));
+        strLectura="";
+
+    } else if (strLectura == "ENC_ANTE") {
+
+        dtostrf(lectura_enc_cin[2],7,3,buffer);
+        Serial_hmi.print("t0.txt=\"");
+        Serial_hmi.print(buffer);
+        Serial_hmi.print("\"");
+        Serial_hmi.write(0xff);
+        Serial_hmi.write(0xff);
+        Serial_hmi.write(0xff);
+        memset(buffer, 0, sizeof(buffer));
+        strLectura="";
+
+    } 
+
     contador_consola++;
     if(contador_consola==50){
         Serial.printf("Posicion del motor %d es: %f:\n",MOTOR_BASE, lectura_enc_cin[0]);
@@ -148,6 +197,9 @@ void modo_calibracion() {
 void modo_automatico() {
     pixels.fill(0xC82A54);
     pixels.show();
+    _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_enc_cin[2]; 
+    u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
+    ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
 }
 
 void modo_inicial(){
@@ -167,16 +219,15 @@ void modos_interrupcion() {
 
     lectura_enc_cin = conversion_angulos_encoder(lectura_encoder_base, lectura_encoder_brazo, lectura_encoder_antebrazo);
 
-    // if ((lectura_enc_cin[0]>=45 || lectura_enc_cin[0]<=-45) || (lectura_enc_cin[1]>=70 || lectura_enc_cin[1]<=10) || (lectura_enc_cin[2]>=135 || lectura_enc_cin[2]<=45)) {
-    if ((lectura_enc_cin[0]>=45 || lectura_enc_cin[0]<=-45) ) {
+    if ((lectura_enc_cin[0]>=45 || lectura_enc_cin[0]<=-45) || (lectura_enc_cin[1]>=70 || lectura_enc_cin[1]<=20) || (lectura_enc_cin[2]>=135 || lectura_enc_cin[2]<=45)) {
         _motors[MOTOR_BASE]->SetDuty(0);
         _motors[MOTOR_BRAZO]->SetDuty(0);
         _motors[MOTOR_ANTEBRAZO]->SetDuty(0);
         flag_manual = false;
         contador_buzzer++;
-        if(contador_buzzer>=20) {
+        if(contador_buzzer>=25) {
             digitalWrite(BUZZER_PIN,LOW);
-            contador_buzzer=20;
+            contador_buzzer=25;
         } else {
             digitalWrite(BUZZER_PIN,HIGH);
         }

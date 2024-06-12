@@ -35,7 +35,8 @@ std::vector<float> f_trayectoria_lineal(std:: vector <float> vector_2puntos_tray
 struct tres_posiciones f_cinematica_directa(float theta_0, float theta_1, float theta_2);
 struct tres_posiciones f_cinematica_inversa(float x, float y, float z);
 struct string_two f_split_pos(String movimiento);
-std::vector <float> f_posiciones_inicio_fin(int inicio, int fin);
+std::vector <float> f_posiciones_2puntos(int inicio, int fin);
+std::vector <float> f_posiciones_9puntos(int inicio, int fin);
 std::vector<float> conversion_angulos_encoder(float theta0_enc, float theta1_enc, float theta2_enc);
 
 #endif

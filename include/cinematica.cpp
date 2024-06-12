@@ -125,7 +125,7 @@ std::vector<float> vector_angulos_robot(3*paso);
 std::vector<float> conversion_angulos_encoder(float theta0_enc, float theta1_enc, float theta2_enc){
     std::vector<float> vector_angulos_encoder(3);
     // Referencia punto 0.1
-    std::vector<float> referencia_calibracion_pos = f_posiciones_inicio_fin(0, 1);
+    std::vector<float> referencia_calibracion_pos = f_posiciones_2puntos(0, 1);
     struct tres_posiciones referencia_calibracion_angulo = f_cinematica_inversa(referencia_calibracion_pos[3], referencia_calibracion_pos[4], referencia_calibracion_pos[5]);
     vector_angulos_encoder[0] = theta0_enc + referencia_calibracion_angulo.pos_1;
     vector_angulos_encoder[1] = -theta1_enc + referencia_calibracion_angulo.pos_2;

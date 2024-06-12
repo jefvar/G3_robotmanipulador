@@ -8,6 +8,7 @@ enum estadosControl _estado_control = ESTADO_INICIAL;
 
 extern int numero_turnos;
 extern String strLectura;
+extern HardwareSerial Serial_hmi;
 
 int contador_consola=0;
 int contador_trayectoria = 0;
@@ -18,6 +19,9 @@ int contador_buzzer = 0;
 int numero_turnos = 0;
 float duty_calibracion = 0.8;
 
+char buffer[10];
+
+void changePage(int page_id);
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(1, PIN_RGB, NEO_GRB + NEO_KHZ800);
 
 void modo_manual();

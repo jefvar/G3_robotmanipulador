@@ -167,6 +167,47 @@ void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral
    // _motors[n_motor]->SetDuty(uk[0]);//con esta opcion se hace como nacho en control de velocidad
 }
 
+void ControlPID_POS_ANTEBRAZO(float error[2],float uk[],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion){
+    float duty=0;
+    float u_prop=0,u_der=0;
+
+    u_prop=kp*error[0];
+    u_der=kd*(error[0]-error[1])/Ts;
+
+    if(error[0]<=1 && error[0]>=-1){    // Base y antebrazo error en eje conductor es 1º
+      u_prop=0;
+      u_der=0;
+      u_integral=0;
+    }    
+    /*if (u_prop<=0.55 && u_prop>0)
+    {
+      u_prop=0.55;
+    }
+    else if(u_prop>=-0.55 && u_prop<0){
+      u_prop=-0.55;
+    }*/
+    duty=u_prop+u_integral+u_der;
+    /*duty=u_prop+u_der;//para la opcion de nacho  
+    uk[0]=uk[1]+duty;*/
+    if(duty>=saturacion)
+    //if(uk[0]>=saturacion)
+    {
+      duty=saturacion;
+      //uk[0]=saturacion;
+    }
+    else if(duty<=-saturacion)
+    //else if(uk[0]<=-saturacion)
+    {
+      duty=-saturacion;
+      //uk[0]=-saturacion;
+    }
+    //Serial.printf(" Duty motor %d: %f || e[0]=%f,e[1]=%f \n",n_motor,duty,error[0],error[1]);
+    //Se aplica el control segun el numero del motor 
+    
+    _motors[n_motor]->SetDuty(duty);
+   // _motors[n_motor]->SetDuty(uk[0]);//con esta opcion se hace como nacho en control de velocidad
+}
+
 
 //Funcion que realiza control
 //void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float *integral_sum,float Ts,int n_motor)//descomentar lo de abajo para la parte integral
