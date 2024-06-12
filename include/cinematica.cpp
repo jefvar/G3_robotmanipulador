@@ -89,16 +89,16 @@ struct tres_posiciones f_cinematica_inversa(float x, float y, float z){
 }
 
 //Función Trayectoria Lineal -> Entrada: tres puntos iniciales + tres puntos finales
-std::vector<float> f_trayectoria_lineal(std:: vector <float> vector_2puntos_trayectoria){
+std::vector<float> f_trayectoria_lineal(float p_ini_x, float p_ini_y, float p_ini_z, float p_fin_x, float p_fin_y, float p_fin_z){
     //Vectores puntos objetivos durante la trayectoria
     std::vector<float> x_objetivo(paso), y_objetivo(paso), z_objetivo(paso);
     //Vector angulos calculados durante la trayectoria -> control
     std::vector<float> angulos_trayectoria(3*paso);
     
     for (int j = 0; j < paso; ++j){
-        x_objetivo[j] = vector_2puntos_trayectoria[0] + (vector_2puntos_trayectoria[3] - vector_2puntos_trayectoria[0]) * j / (paso - 1);
-        y_objetivo[j] = vector_2puntos_trayectoria[1] + (vector_2puntos_trayectoria[4] - vector_2puntos_trayectoria[1]) * j / (paso - 1);
-        z_objetivo[j] = vector_2puntos_trayectoria[2] + (vector_2puntos_trayectoria[5] - vector_2puntos_trayectoria[2]) * j / (paso - 1);
+        x_objetivo[j] = p_ini_x + (p_fin_x - p_ini_x) * j / (paso - 1);
+        y_objetivo[j] = p_ini_y + (p_fin_y - p_ini_y) * j / (paso - 1);
+        z_objetivo[j] = p_ini_z + (p_fin_z - p_ini_z) * j / (paso - 1);
         
         //Cinemática inversa -> paso a ángulos
         struct tres_posiciones angulo = f_cinematica_inversa(x_objetivo[j], y_objetivo[j], z_objetivo[j]);
@@ -314,9 +314,13 @@ std::vector <float> f_posiciones_9puntos(int inicio, int fin){
     pos_38.coord_z = -80;
 
     //Posición HOME
-    pos_39.coord_x = 360;
-    pos_39.coord_y = 0;
-    pos_39.coord_z = -80;
+    // pos_39.coord_x = 360;
+    // pos_39.coord_y = 0;
+    // pos_39.coord_z = -80;
+    struct tres_posiciones home_ini = f_cinematica_directa(0, 30, 90);
+    pos_39.coord_x = home_ini.pos_1;
+    pos_39.coord_y = home_ini.pos_2;
+    pos_39.coord_z = home_ini.pos_3;
     
     //vector que almacena las posiciones del tablero
     std::vector<posiciones_tablero> pos_tablero{pos_0, pos_1, pos_2, pos_3, pos_4, pos_5, pos_6, pos_7, pos_8};

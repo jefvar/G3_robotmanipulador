@@ -7,6 +7,7 @@
 int_two pos_trayectoria;
 std::vector<float> trayectoria_ini_end;
 std::vector<float> trayectoria_total;
+std::vector<float> trayectoria_total_total;
 std::vector<float> lectura_enc_cin(3);
 // MODO MANUAL
 string_two pos_ini_end;
@@ -28,11 +29,15 @@ void modo_manual()  {
         strLectura = "";
         pos_trayectoria.int_1 = pos_ini_end.string_1.toInt();
         pos_trayectoria.int_2 = pos_ini_end.string_2.toInt();
-        trayectoria_ini_end = f_posiciones_2puntos(pos_trayectoria.int_1, pos_trayectoria.int_2);
-        trayectoria_total = f_trayectoria_lineal(trayectoria_ini_end);
-        for (int i = 0; i < 3*paso; i++)
+        trayectoria_ini_end = f_posiciones_9puntos(pos_trayectoria.int_1, pos_trayectoria.int_2);
+        for(int i=0; i<8; i++) {
+            trayectoria_total = f_trayectoria_lineal(trayectoria_ini_end[3*i],trayectoria_ini_end[3*i+1], trayectoria_ini_end[3*i+2], trayectoria_ini_end[3*i+3], trayectoria_ini_end[3*i+4], trayectoria_ini_end[3*i+5]);
+            trayectoria_total_total.insert(trayectoria_total_total.end(), trayectoria_total.begin(), trayectoria_total.end());
+        }
+        
+        for (int i = 0; i < 720; i++)
         {
-            Serial.printf("vector total de la trayectoria %i: %f \n",i, trayectoria_total[i]);
+            Serial.printf("vector total de la trayectoria %i: %f \n",i, trayectoria_total_total[i]);
         }
         flag_manual = true;
     }
@@ -41,34 +46,35 @@ void modo_manual()  {
 
     // MODO MANUAL
     if (flag_manual)
+    // if (false)
     {
         _ek_pos_base[0]=_ref_motores[0]-lectura_enc_cin[0];
         _ek_pos_brazo[0]=_ref_motores[1]-lectura_enc_cin[1]; 
         _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_enc_cin[2]; 
         
-        u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
+        u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO_BAJADA,TS);
         u_integral_base=integral(_ek_pos_base[0],&_integral_motores[0],kI_BASE,TS);
         u_integral_brazo=integral(_ek_pos_brazo[0],&_integral_motores[1],kI_BRAZO,TS);
 
-        ControlPID_POS(_ek_pos_base,_uk_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
-        ControlPD_POS(_ek_pos_brazo,_uk_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,u_integral_brazo,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
-        ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
+        // ControlPID_POS(_ek_pos_base,KP_M_BASE,KD_M_BASE,u_integral_base,TS,MOTOR_BASE,DUTY_BASE);//Listo queda optimizar
+        // ControlPD_POS(_ek_pos_brazo,KP_M_BRAZO,KD_M_BRAZO,u_integral_brazo,TS,MOTOR_BRAZO,DUTY_BRAZO);//calibrado
+        // ControlPID_POS_ANTEBRAZO(_ek_pos_antebrazo,KP_M_ANTEBRAZO_SUBIDA,KP_M_ANTEBRAZO_BAJADA,KD_M_ANTEBRAZO_SUBIDA,KD_M_ANTEBRAZO_BAJADA,u_integral_antebrazo,TS,DUTY_ANTE);
         
+        ControlPID_POS_HOME(_ek_pos_base,_ek_pos_brazo, _ek_pos_antebrazo,u_integral_base, u_integral_brazo, u_integral_antebrazo);
+
         contador_trayectoria++;
         if(contador_trayectoria==15){
-            if(contador_pasos<30){
+            if(contador_pasos<240){
             if(contador_pasos==0) {
                 cerrar_servo();
             }
-            _ref_motores[MOTOR_BASE]=trayectoria_total[3*contador_pasos];
-            _ref_motores[MOTOR_BRAZO]=trayectoria_total[1+3*contador_pasos];
-            _ref_motores[MOTOR_ANTEBRAZO]=trayectoria_total[2+3*contador_pasos];
-            Serial.printf("Referencia del motor %d es: %f:\n",MOTOR_BASE, _ref_motores[MOTOR_BASE]);
-            Serial.printf("Referencia del motor %d es: %f \n",MOTOR_BRAZO,_ref_motores[MOTOR_BRAZO]);
-            Serial.printf("Referencia del motor %d es: %f \n",MOTOR_ANTEBRAZO, _ref_motores[MOTOR_ANTEBRAZO]);
-            Serial.printf("Posicion del motor %d es: %f:\n",MOTOR_BASE, lectura_enc_cin[0]);
-            Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,lectura_enc_cin[1]);
-            Serial.printf("Posicion del motor %d es: %f \n",MOTOR_ANTEBRAZO, lectura_enc_cin[2]);
+            _ref_motores[MOTOR_BASE]=trayectoria_total_total[3*contador_pasos];
+            _ref_motores[MOTOR_BRAZO]=trayectoria_total_total[1+3*contador_pasos];
+            _ref_motores[MOTOR_ANTEBRAZO]=trayectoria_total_total[2+3*contador_pasos];
+            Serial.printf("Referencia es: %f, \t %f, \t %f\n", _ref_motores[MOTOR_BASE], _ref_motores[MOTOR_BRAZO], _ref_motores[MOTOR_ANTEBRAZO]);
+            // Serial.printf("Posicion del motor %d es: %f:\n",MOTOR_BASE, lectura_enc_cin[0]);
+            // Serial.printf("Posicion del motor %d es: %f \n",MOTOR_BRAZO,lectura_enc_cin[1]);
+            // Serial.printf("Posicion del motor %d es: %f \n",MOTOR_ANTEBRAZO, lectura_enc_cin[2]);
             contador_pasos++;
             
             } 
@@ -198,8 +204,8 @@ void modo_automatico() {
     pixels.fill(0xC82A54);
     pixels.show();
     _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_enc_cin[2]; 
-    u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO,TS);
-    ControlPID_POS(_ek_pos_antebrazo,_uk_pos_antebrazo,KP_M_ANTEBRAZO,KD_M_ANTEBRAZO,u_integral_antebrazo,TS,MOTOR_ANTEBRAZO,DUTY_ANTE);//pendiente
+    u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO_BAJADA,TS);
+    ControlPID_POS_ANTEBRAZO(_ek_pos_antebrazo,KP_M_ANTEBRAZO_SUBIDA,KP_M_ANTEBRAZO_BAJADA,KD_M_ANTEBRAZO_SUBIDA,KD_M_ANTEBRAZO_BAJADA,u_integral_antebrazo,TS,DUTY_ANTE);
 }
 
 void modo_inicial(){
@@ -223,6 +229,7 @@ void modos_interrupcion() {
         _motors[MOTOR_BASE]->SetDuty(0);
         _motors[MOTOR_BRAZO]->SetDuty(0);
         _motors[MOTOR_ANTEBRAZO]->SetDuty(0);
+        _estado_control = ESTADO_INICIAL;
         flag_manual = false;
         contador_buzzer++;
         if(contador_buzzer>=25) {
@@ -235,6 +242,16 @@ void modos_interrupcion() {
     } else {
         contador_buzzer=0;
     }
+
+    // _ek_pos_base[0]=_ref_motores[0]-lectura_enc_cin[0];
+    // _ek_pos_brazo[0]=_ref_motores[1]-lectura_enc_cin[1]; 
+    // _ek_pos_antebrazo[0]=_ref_motores[2]-lectura_enc_cin[2]; 
+    
+    // u_integral_base=integral(_ek_pos_base[0],&_integral_motores[0],kI_BASE,TS);
+    // u_integral_brazo=integral(_ek_pos_brazo[0],&_integral_motores[1],kI_BRAZO,TS);
+    // u_integral_antebrazo=integral(_ek_pos_antebrazo[0],&_integral_motores[2],kI_ANTEBRAZO_BAJADA,TS);
+
+    // ControlPID_POS_HOME(_ek_pos_base,_ek_pos_brazo, _ek_pos_antebrazo,u_integral_base, u_integral_brazo, u_integral_antebrazo);
     
     /*************************** SWITCH CASE MODOS ***************************/
     switch (_estado_control)

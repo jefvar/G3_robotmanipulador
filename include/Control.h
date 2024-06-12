@@ -29,18 +29,21 @@ Driver_L298n *_motors[3]; //Creacion del puntero al objeto // Se puede usar un a
 #define MOTOR_ANTEBRAZO 2
 #define KP_M_BASE 0.07 //calibrado con 0.07
 #define KP_M_BRAZO 0.035
-#define KP_M_ANTEBRAZO 0.03
+#define KP_M_ANTEBRAZO_SUBIDA 0.3
+#define KP_M_ANTEBRAZO_BAJADA 0.3
 #define KD_M_BASE 0.005 //calibrado con 0.005
 #define KD_M_BRAZO 0.008
-#define KD_M_ANTEBRAZO 0.001
+#define KD_M_ANTEBRAZO_SUBIDA 0.001 //0.001
+#define KD_M_ANTEBRAZO_BAJADA 0.001 //0.001
 #define TS 0.02 //tiempo de muestreo
-#define kI_ANTEBRAZO 0.05//0.01
+#define kI_ANTEBRAZO_SUBIDA 0.02 //0.02//0.01
+#define kI_ANTEBRAZO_BAJADA 0.02 //0.02//0.01
 #define kI_BASE 0.03 //calibrado con 0.03
 #define kI_BRAZO 0.02 
 
 #define DUTY_BASE 1.0
 #define DUTY_BRAZO 1.0
-#define DUTY_ANTE 1.0
+#define DUTY_ANTE 0.8
 
 
 #define PIN_M1_EN 3         //EN_A
@@ -83,8 +86,10 @@ void parseData();
 float LecturaEncoder(int n_motor);
 float integral(float error, float *integral_sum, float K_i, float Ts);
 //void ControlPID_POS(float error[2],float uk[2],float kp,float kd,float integral,int n_motor);//opcion separa de la integral
-void ControlPID_POS(float error[2],float uk[],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion);
-void ControlPD_POS(float error[2],float uk[2],float kp,float kd, float u_integral, float Ts,int n_motor,float saturacion);
+void ControlPID_POS(float error[2],float kp,float kd,float u_integral,float Ts,int n_motor,float saturacion);
+void ControlPD_POS(float error[2],float kp,float kd, float u_integral, float Ts,int n_motor,float saturacion);
+void ControlPID_POS_ANTEBRAZO(float error[2],float kp_up,float kp_down,float kd_up,float kd_down,float u_integral,float Ts,float saturacion);
 
+void ControlPID_POS_HOME(float errorbase[2],float errorbrazo[2], float errorante[2],float u_integral_base, float u_integral_brazo,float u_integral_ante);
 
 #endif //
