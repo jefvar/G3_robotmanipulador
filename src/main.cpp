@@ -15,7 +15,6 @@ float _ref_motores[3]={0,30,90};
 hw_timer_t *timer = NULL; //Puntero de variable para configurar timer 
 HardwareSerial Serial_hmi(1);
 
-
 const int Serial_hmi_RX = 18;
 const int Serial_hmi_TX = 17;
 
