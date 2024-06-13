@@ -195,7 +195,7 @@ std::vector <float> f_posiciones_9puntos(int inicio, int fin){
     pos_9.coord_z = -135;
 
     pos_10.coord_x = 355;
-    pos_10.coord_y = 70;
+    pos_10.coord_y = 70;                // NO DEBERIA SER NEGATIVO?
     pos_10.coord_z = -135;
 
     pos_11.coord_x = 390;
@@ -236,7 +236,7 @@ std::vector <float> f_posiciones_9puntos(int inicio, int fin){
     pos_19.coord_z = -95;
 
     pos_20.coord_x = 355;
-    pos_20.coord_y = 70;
+    pos_20.coord_y = 70;                        /// DEBERIA SER NEGATIVO??
     pos_20.coord_z = -95;
 
     pos_21.coord_x = 390;
@@ -369,8 +369,8 @@ std::vector <float> f_posiciones_9puntos(int inicio, int fin){
     {
         //Posición referencia
         vector_9puntos_trayectoria[3*i] = pos_referencia[2].coord_x;
-        vector_9puntos_trayectoria[3*i+1] = pos_referencia[2].coord_x;
-        vector_9puntos_trayectoria[3*i+2] = pos_referencia[2].coord_x;
+        vector_9puntos_trayectoria[3*i+1] = pos_referencia[2].coord_x;          // coord_y
+        vector_9puntos_trayectoria[3*i+2] = pos_referencia[2].coord_x;          // coord_z
     }
 
     for (int i = 5; i < 6; i++)
